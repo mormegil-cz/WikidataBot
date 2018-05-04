@@ -1,0 +1,33 @@
+.idea/
+
+# IntelliJ
+out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+
+.vs/
+
+
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
