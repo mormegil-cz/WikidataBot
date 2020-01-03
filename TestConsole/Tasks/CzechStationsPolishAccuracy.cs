@@ -33,7 +33,7 @@ SELECT ?item ?lat ?lon WHERE {
             foreach (var row in entities)
             {
                 var entityId = GetEntityIdFromUri(row[0]);
-                await Console.Error.WriteLineAsync($"Reading {entityId} ({counter}/{count})");
+                await Console.Error.WriteLineAsync($"Reading {entityId} ({++counter}/{count})");
                 var entity = new Entity(wikidataSite, entityId);
                 await entity.RefreshAsync(EntityQueryOptions.FetchAllProperties, new string[] {"cs", "en"});
 
