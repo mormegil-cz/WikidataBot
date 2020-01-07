@@ -20,11 +20,10 @@ SELECT ?item ?lat ?lon WHERE {
   ?coordsStmt psv:P625 ?coords.
   ?coordsStmt prov:wasDerivedFrom/pr:P143 wd:Q1551807.
   ?coords wikibase:geoPrecision ?prec.
-  FILTER (?prec > 0.14)
+  FILTER (?prec > 0.13)
   ?coords wikibase:geoLongitude ?lon.
   ?coords wikibase:geoLatitude ?lat.
 }
-LIMIT 10
 "), new Dictionary<string, string> {{"item", "uri"}, {"lat", "literal"}, {"lon", "literal"}}))
             {
                 var entityId = GetEntityIdFromUri(row[0]);

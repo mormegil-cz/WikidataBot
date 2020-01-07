@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -31,6 +30,7 @@ namespace TestConsole
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
 
             await CzechStationsPolishAccuracy.Run(wikidataSite);
+            // await ListSparqlQuery.Run(wikidataSite);
         }
     }
 }

@@ -22,13 +22,13 @@ SELECT ?item ?lat ?lon WHERE {
   ?coordsStmt psv:P625 ?coords.
   ?coordsStmt prov:wasDerivedFrom/pr:P143 wd:Q1551807.
   ?coords wikibase:geoPrecision ?prec.
-  FILTER (?prec > 0.14)
+  FILTER (?prec > 0.13)
   ?coords wikibase:geoLongitude ?lon.
   ?coords wikibase:geoLatitude ?lat.
 }
 "), new Dictionary<string, string> {{"item", "uri"}, {"lat", "literal"}, {"lon", "literal"}}).ToList();
             var counter = 0;
-            var count = entities.Count();
+            var count = entities.Count;
             await Console.Error.WriteLineAsync($"Retrieved {count} entities, processing...");
             foreach (var row in entities)
             {
