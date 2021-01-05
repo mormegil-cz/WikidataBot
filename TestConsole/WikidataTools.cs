@@ -32,7 +32,7 @@ namespace TestConsole
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             // TODO: URI building and escaping
-            var uriBuilder = new UriBuilder(QueryEndpoint) {Query = "format=json&query=" + Uri.EscapeUriString(sparql)};
+            var uriBuilder = new UriBuilder(QueryEndpoint) {Query = "format=json&query=" + Uri.EscapeDataString(sparql)};
             return client.GetStringAsync(uriBuilder.Uri);
         }
 
