@@ -45,9 +45,16 @@ namespace TestConsole
                 foreach (var (key, value) in fields)
                 {
                     var item = result[key];
-                    var itemType = item["type"].Value<string>();
-                    if (itemType != value) throw new FormatException($"{value} expected, {itemType} found");
-                    row.Add(item["value"].Value<string>());
+                    if (item == null)
+                    {
+                        row.Add(null);
+                    }
+                    else
+                    {
+                        var itemType = item["type"].Value<string>();
+                        if (itemType != value) throw new FormatException($"{value} expected, {itemType} found");
+                        row.Add(item["value"].Value<string>());
+                    }
                 }
 
                 yield return row;
