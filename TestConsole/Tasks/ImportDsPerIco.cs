@@ -1,10 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using WikiClientLibrary.Pages;
+using WikiClientLibrary.Sites;
+using WikiClientLibrary.Wikibase;
+using WikiClientLibrary.Wikibase.DataTypes;
 using static TestConsole.WikidataTools;
 
 namespace TestConsole.Tasks
@@ -12,41 +18,35 @@ namespace TestConsole.Tasks
     public static class ImportDsPerIco
     {
         private const int QueryBatchSize = 100;
-        private const int ImportBatchSize = 10; // number of query batches in a single import file
+
+        private const int QuerySkip = 3;
 
         private static int MissingEntries = 0;
         private static int UpToDateEntries = 0;
         private static int DifferentEntries = 0;
         private static int ImportedEntries = 0;
 
-        public static async Task Run()
+        public static async Task Run(WikiSite wikidataSite)
         {
-            var dsData = await LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_ovm-20210111092054.xml");
-            var count = (dsData.Count + QueryBatchSize - 1) / QueryBatchSize;
-
-            var queryBatch = 0;
-            var importBatch = 1;
-            var batchStart = 0;
-            TextWriter outputWriter = null;
-            foreach (var batch in dsData.Batch(QueryBatchSize))
+            // using (var importer = new QuickStatementExport())
+            using (var importer = new BotEditingImport(wikidataSite))
             {
-                ++queryBatch;
-                if (outputWriter == null || batchStart < queryBatch - ImportBatchSize)
+                var queryBatch = 0;
+                await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20210114092051.xml").Batch(QueryBatchSize))
                 {
-                    outputWriter?.Close();
-                    outputWriter = new StreamWriter($"qs-import-datafile-seznam_ds_ovm-20210111092054-batch-{importBatch:000}.tsv", false, Encoding.UTF8);
-                    batchStart = queryBatch;
-                    ++importBatch;
+                    ++queryBatch;
+                    if (queryBatch <= QuerySkip) continue;
+
+                    Console.WriteLine($"*** Processing batch #{queryBatch}...");
+                    await importer.StartQueryBatchProcessing(queryBatch);
+                    await ImportBatch(batch, importer);
                 }
-                Console.WriteLine($"*** Processing batch {queryBatch}/{count}...");
-                await ImportBatch(batch, outputWriter);
             }
-            outputWriter?.Close();
 
             Console.WriteLine("{0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries);
         }
 
-        private static async Task ImportBatch(KeyValuePair<string, string>[] entriesToImport, TextWriter writer)
+        private static async Task ImportBatch(KeyValuePair<string, string>[] entriesToImport, IImporter importer)
         {
             var sparql = new StringBuilder();
             sparql.Append("SELECT ?item ?ico ?dsid WHERE { ?item wdt:P4156 ?ico. FILTER (?ico IN (");
@@ -70,7 +70,7 @@ namespace TestConsole.Tasks
                     if (String.IsNullOrEmpty(entryAtWd.dsid))
                     {
                         await Console.Error.WriteLineAsync($"Importing {entryToImport.Value} for {entryToImport.Key} at {entryAtWd.item}");
-                        await ImportEntry(entryToImport.Value, entryAtWd.item, writer);
+                        await importer.ImportEntry(entryToImport.Value, entryAtWd.item);
                         ++ImportedEntries;
                     }
                     else
@@ -89,73 +89,85 @@ namespace TestConsole.Tasks
                 }
                 else
                 {
-                    await Console.Error.WriteLineAsync($"IČO {entryToImport.Key} not found at WD");
+                    await Console.Error.WriteLineAsync($"ID {entryToImport.Key} not found at WD");
                     ++MissingEntries;
                 }
             }
         }
 
-        private static async Task ImportEntry(string dsid, string item, TextWriter writer)
+        private static async IAsyncEnumerable<KeyValuePair<string, string>> LoadDsData(string filename)
         {
-            var qid = GetEntityIdFromUri(item);
-
-            await writer.WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2021-01-11T00:00:00Z/11");
-        }
-
-        private static async Task<Dictionary<string, string>> LoadDsData(string filename)
-        {
-            var result = new Dictionary<string, string>();
-
-            using var reader = XmlReader.Create(filename, new XmlReaderSettings {Async = true});
-            await reader.MoveToContentAsync();
-            reader.ReadStartElement("list");
-            while (await reader.MoveToContentAsync() == XmlNodeType.Element)
+            await using var stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var firstByte = stream.ReadByte();
+            stream.Seek(0, SeekOrigin.Begin);
+            XmlReader reader = null;
+            try
             {
-                reader.ReadStartElement("box");
-                string ico = null;
-                string dsid = null;
-                var isMaster = true;
+                switch (firstByte)
+                {
+                    case 0x3C:
+                        // plain XML
+                        reader = XmlReader.Create(stream, new XmlReaderSettings {Async = true});
+                        break;
+                    case 0x1F:
+                        // GZ-compressed XML
+                        reader = XmlReader.Create(new GZipStream(stream, CompressionMode.Decompress), new XmlReaderSettings {Async = true});
+                        break;
+                    default:
+                        throw new FormatException("Unsupported XML format");
+                }
+                await reader.MoveToContentAsync();
+                reader.ReadStartElement("list");
                 while (await reader.MoveToContentAsync() == XmlNodeType.Element)
                 {
-                    switch (reader.Name)
+                    reader.ReadStartElement("box");
+                    string ico = null;
+                    string dsid = null;
+                    var isMaster = true;
+                    while (await reader.MoveToContentAsync() == XmlNodeType.Element)
                     {
-                        case "id":
-                            dsid = await reader.ReadElementContentAsStringAsync();
-                            break;
-                        case "ico":
-                            ico = await reader.ReadElementContentAsStringAsync();
-                            break;
-                        case "hierarchy":
-                            reader.ReadStartElement();
-                            while (await reader.MoveToContentAsync() == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
+                        switch (reader.Name)
+                        {
+                            case "id":
+                                dsid = await reader.ReadElementContentAsStringAsync();
+                                break;
+                            case "ico":
+                                ico = await reader.ReadElementContentAsStringAsync();
+                                break;
+                            case "hierarchy":
+                                reader.ReadStartElement();
+                                while (await reader.MoveToContentAsync() == XmlNodeType.Element)
                                 {
-                                    case "isMaster":
-                                        isMaster = reader.ReadElementContentAsBoolean();
-                                        break;
-                                    default:
-                                        await reader.SkipAsync();
-                                        break;
+                                    switch (reader.Name)
+                                    {
+                                        case "isMaster":
+                                            isMaster = reader.ReadElementContentAsBoolean();
+                                            break;
+                                        default:
+                                            await reader.SkipAsync();
+                                            break;
+                                    }
                                 }
-                            }
-                            reader.ReadEndElement();
-                            break;
-                        default:
-                            await reader.SkipAsync();
-                            break;
+                                reader.ReadEndElement();
+                                break;
+                            default:
+                                await reader.SkipAsync();
+                                break;
+                        }
+                    }
+                    reader.ReadEndElement();
+                    if (ico == null || dsid == null) throw new FormatException("Missing ico or id");
+                    if (isMaster && ico != "")
+                    {
+                        yield return new KeyValuePair<string, string>(ico, dsid);
                     }
                 }
                 reader.ReadEndElement();
-                if (ico == null || dsid == null) throw new FormatException("Missing ico or id");
-                if (isMaster && ico != "")
-                {
-                    if (result.ContainsKey(ico)) throw new FormatException($"Duplicate box for {ico}");
-                    result.Add(ico, dsid);
-                }
             }
-            reader.ReadEndElement();
-            return result;
+            finally
+            {
+                reader?.Dispose();
+            }
         }
 
         private static IEnumerable<TSource[]> Batch<TSource>(
@@ -165,6 +177,25 @@ namespace TestConsole.Tasks
             var count = 0;
 
             foreach (var item in source)
+            {
+                bucket[count++] = item;
+                if (count == size)
+                {
+                    yield return bucket;
+                    count = 0;
+                }
+            }
+
+            if (count > 0) yield return bucket.Take(count).ToArray();
+        }
+
+        private static async IAsyncEnumerable<TSource[]> Batch<TSource>(
+            this IAsyncEnumerable<TSource> source, int size)
+        {
+            var bucket = new TSource[size];
+            var count = 0;
+
+            await foreach (var item in source)
             {
                 bucket[count++] = item;
                 if (count == size)
@@ -195,6 +226,80 @@ namespace TestConsole.Tasks
                 result.Add(key, valueSelector(item));
             }
             return result;
+        }
+    }
+
+    internal interface IImporter : IDisposable
+    {
+        Task StartQueryBatchProcessing(int queryBatchNumber);
+        Task ImportEntry(string dsid, string item);
+    }
+
+    internal class QuickStatementExport : IImporter
+    {
+        private const int ImportBatchSize = 10; // number of query batches in a single import file
+
+        private int importBatch;
+        private int batchStart;
+        TextWriter outputWriter;
+
+        public Task StartQueryBatchProcessing(int queryBatchNumber)
+        {
+            if (outputWriter == null || batchStart < queryBatchNumber - ImportBatchSize)
+            {
+                outputWriter?.Close();
+                outputWriter = new StreamWriter($"qs-import-datafile-seznam_ds_ovm-20210111092054-batch-{importBatch:000}.tsv", false, Encoding.UTF8);
+                batchStart = queryBatchNumber;
+                ++importBatch;
+            }
+            return Task.CompletedTask;
+        }
+
+        public async Task ImportEntry(string dsid, string item)
+        {
+            var qid = GetEntityIdFromUri(item);
+            await outputWriter.WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2021-01-11T00:00:00Z/11");
+        }
+
+        public void Dispose()
+        {
+            outputWriter?.Dispose();
+        }
+    }
+
+    internal class BotEditingImport : IImporter
+    {
+        private static readonly Uri GregorianCalendarUri = new Uri("http://www.wikidata.org/entity/Q1985727");
+        private readonly WikiSite wikidataSite;
+
+        public BotEditingImport(WikiSite wikidataSite)
+        {
+            this.wikidataSite = wikidataSite;
+        }
+
+        public Task StartQueryBatchProcessing(int queryBatchNumber)
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task ImportEntry(string dsid, string item)
+        {
+            var qid = GetEntityIdFromUri(item);
+            var entity = new Entity(wikidataSite, qid);
+            var claimDsid = new Claim(new Snak("P8987", dsid, BuiltInDataTypes.ExternalId));
+            claimDsid.References.Add(new ClaimReference(
+                new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Právnické osoby"), BuiltInDataTypes.MonolingualText),
+                new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
+                new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
+                new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
+                new Snak("P813", new WbTime(2021, 1, 14, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+            ));
+            var edits = new[] {new EntityEditEntry(nameof(Entity.Claims), claimDsid)};
+            await entity.EditAsync(edits, "DS ID import for companies based on IČO", EntityEditOptions.Bot);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
