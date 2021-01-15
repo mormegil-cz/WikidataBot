@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using WikiClientLibrary.Pages;
 using WikiClientLibrary.Sites;
 using WikiClientLibrary.Wikibase;
 using WikiClientLibrary.Wikibase.DataTypes;
@@ -19,7 +17,7 @@ namespace TestConsole.Tasks
     {
         private const int QueryBatchSize = 100;
 
-        private const int QuerySkip = 3;
+        private const int QuerySkip = 2245;
 
         private static int MissingEntries = 0;
         private static int UpToDateEntries = 0;
@@ -28,19 +26,51 @@ namespace TestConsole.Tasks
 
         public static async Task Run(WikiSite wikidataSite)
         {
-            // using (var importer = new QuickStatementExport())
-            using (var importer = new BotEditingImport(wikidataSite))
+            var queryBatch = 0;
+            try
             {
-                var queryBatch = 0;
-                await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20210114092051.xml").Batch(QueryBatchSize))
+                // using (var importer = new QuickStatementExport())
+                using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    ++queryBatch;
-                    if (queryBatch <= QuerySkip) continue;
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20210114092051.xml").Batch(QueryBatchSize))
+                    {
+                        while (Console.KeyAvailable)
+                        {
+                            if (Console.ReadKey().Key == ConsoleKey.Escape)
+                            {
+                                Console.WriteLine($"Aborting at {queryBatch}");
+                                break;
+                            }
+                        }
 
-                    Console.WriteLine($"*** Processing batch #{queryBatch}...");
-                    await importer.StartQueryBatchProcessing(queryBatch);
-                    await ImportBatch(batch, importer);
+                        ++queryBatch;
+                        if (queryBatch <= QuerySkip)
+                        {
+                            if (queryBatch == 1)
+                            {
+                                Console.Write($"Skipping {QuerySkip} batches...");
+                            }
+                            if (queryBatch % 100 == 0)
+                            {
+                                Console.Write($"{queryBatch}...");
+                            }
+                            if (queryBatch == QuerySkip)
+                            {
+                                Console.WriteLine();
+                            }
+                            continue;
+                        }
+
+                        Console.WriteLine($"*** Processing batch #{queryBatch}...");
+                        await importer.StartQueryBatchProcessing(queryBatch);
+                        await ImportBatch(batch, importer);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Aborted with error at batch {4}; {0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries, queryBatch);
+                throw;
             }
 
             Console.WriteLine("{0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries);
@@ -269,7 +299,10 @@ namespace TestConsole.Tasks
 
     internal class BotEditingImport : IImporter
     {
+        private static readonly string EditGroupId = GenerateRandomEditGroupId();
+        private static readonly string EditSummary = MakeEditSummary("DS ID import for companies based on IČO", EditGroupId);
         private static readonly Uri GregorianCalendarUri = new Uri("http://www.wikidata.org/entity/Q1985727");
+
         private readonly WikiSite wikidataSite;
 
         public BotEditingImport(WikiSite wikidataSite)
@@ -295,7 +328,7 @@ namespace TestConsole.Tasks
                 new Snak("P813", new WbTime(2021, 1, 14, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
             ));
             var edits = new[] {new EntityEditEntry(nameof(Entity.Claims), claimDsid)};
-            await entity.EditAsync(edits, "DS ID import for companies based on IČO", EntityEditOptions.Bot);
+            await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
         }
 
         public void Dispose()

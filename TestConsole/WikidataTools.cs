@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using WikiClientLibrary.Client;
@@ -61,9 +62,16 @@ namespace TestConsole
             }
         }
 
-        public static string GetEntityIdFromUri(string entityUri)
+        public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').LastOrDefault();
+
+        public static string GenerateRandomEditGroupId()
         {
-            return new Uri(entityUri).AbsolutePath.Split('/').LastOrDefault();
+            var rng = RandomNumberGenerator.Create();
+            var bytes = new byte[10];
+            rng.GetBytes(bytes);
+            return BitConverter.ToString(bytes).Replace("-", "");
         }
+
+        public static string MakeEditSummary(string summary, string editGroupId) => $"{summary} ([[:toollabs:editgroups/b/CB/{editGroupId}|details]])";
     }
 }
