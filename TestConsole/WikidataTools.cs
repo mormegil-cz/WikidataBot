@@ -69,7 +69,7 @@ namespace TestConsole
             var rng = RandomNumberGenerator.Create();
             var bytes = new byte[10];
             rng.GetBytes(bytes);
-            return BitConverter.ToString(bytes).Replace("-", "");
+            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
         }
 
         public static string MakeEditSummary(string summary, string editGroupId) => $"{summary} ([[:toollabs:editgroups/b/CB/{editGroupId}|details]])";
