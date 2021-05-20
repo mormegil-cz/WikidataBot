@@ -27,6 +27,7 @@ namespace TestConsole
 
             var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new {username = "", password = ""});
 
+            await Console.Error.WriteLineAsync("Logging in...");
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
 
             // await ImportDsPerIco.Run(wikidataSite);
@@ -34,7 +35,8 @@ namespace TestConsole
             // await DrobnePamatkyDeprecated.Run(wikidataSite);
             // await CzechStationsPolishAccuracy.Run(wikidataSite);
             // await ListSparqlQuery.Run(wikidataSite);
-            await ExportPropertyHistory.Run(wikidataSite);
+            // await ExportPropertyHistory.Run(wikidataSite);
+            await FixMonumentCatalogueUrl.Run(wikidataSite);
         }
     }
 }

@@ -67,7 +67,7 @@ namespace TestConsole.Tasks
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Aborted with error at batch {4}; {0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries, queryBatch);
                 throw;
