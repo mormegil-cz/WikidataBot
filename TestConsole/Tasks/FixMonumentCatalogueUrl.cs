@@ -15,8 +15,13 @@ namespace TestConsole.Tasks
     {
         private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/\?mode=parametric&catalogNumber=([0-9]+)&presenter=ElementsResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private const int BatchSize = 50;
+
         public static async Task Run(WikiSite wikidataSite)
         {
+            var editGroupId = GenerateRandomEditGroupId();
+            var editSummary = MakeEditSummary("Fixing reference URLs to Památkový katalog", editGroupId);
+
             int entityCount;
             do
             {
@@ -28,8 +33,8 @@ SELECT DISTINCT ?item WHERE {
   ?ref pr:P854 ?refURL .
   FILTER (STRSTARTS(str(?refURL),'https://pamatkovykatalog.cz/?mode=parametric&catalogNumber=')) .
 }
-LIMIT 500
-"), new Dictionary<string, string> { { "item", "uri" } }).ToList();
+LIMIT " + BatchSize
+                ), new Dictionary<string, string> { { "item", "uri" } }).ToList();
                 var counter = 0;
                 entityCount = entities.Count;
                 await Console.Error.WriteLineAsync($"Retrieved {entityCount} entities, processing...");
@@ -74,15 +79,15 @@ LIMIT 500
                     await Console.Error.WriteLineAsync($"Editing {entityId} ({edits.Count} claims)");
                     var options = EntityEditOptions.Bot;
                     if (edits.Count > 1) options |= EntityEditOptions.Bulk;
-                    await entity.EditAsync(edits, "Fixing reference URLs to Památkový katalog", options);
+                    await entity.EditAsync(edits, editSummary, options);
                 }
 
-                if (entityCount == 500)
+                if (entityCount == BatchSize)
                 {
                     await Console.Error.WriteLineAsync($"...");
                     Thread.Sleep(30000);
                 }
-            } while (entityCount == 500);
+            } while (entityCount == BatchSize);
 
             await Console.Error.WriteLineAsync("Done!");
         }
