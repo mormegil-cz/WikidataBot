@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using TestConsole.MWApi;
+using WikiClientLibrary.Client;
 using WikiClientLibrary.Sites;
 using WikiClientLibrary.Wikibase;
 using WikiClientLibrary.Wikibase.DataTypes;
@@ -15,7 +17,7 @@ namespace TestConsole.Tasks
     {
         private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/\?mode=parametric&catalogNumber=([0-9]+)&presenter=ElementsResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        private const int BatchSize = 50;
+        private const int BatchSize = 500;
 
         public static async Task Run(WikiSite wikidataSite)
         {
@@ -25,22 +27,19 @@ namespace TestConsole.Tasks
             int entityCount;
             do
             {
-                await Console.Error.WriteLineAsync("Retrieving data from WQS");
-                var entities = GetEntities(await GetSparqlResults(@"
-SELECT DISTINCT ?item WHERE {
-  ?item ?prop ?stmt.
-  ?stmt prov:wasDerivedFrom ?ref.
-  ?ref pr:P854 ?refURL .
-  FILTER (STRSTARTS(str(?refURL),'https://pamatkovykatalog.cz/?mode=parametric&catalogNumber=')) .
-}
-LIMIT " + BatchSize
-                ), new Dictionary<string, string> { { "item", "uri" } }).ToList();
+                await Console.Error.WriteLineAsync("Retrieving data from MW API");
+                var entities = GetResultsFromApi(
+                        await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("https", "pamatkovykatalog.cz/?mode=parametric&catalogNumber=", BatchSize), true, CancellationToken.None),
+                        new List<string> { "query", "exturlusage" },
+                        new List<string> { "title" }
+                    )
+                    .ToList();
                 var counter = 0;
                 entityCount = entities.Count;
                 await Console.Error.WriteLineAsync($"Retrieved {entityCount} entities, processing...");
                 foreach (var row in entities)
                 {
-                    var entityId = GetEntityIdFromUri(row[0]);
+                    var entityId = row[0];
                     await Console.Error.WriteLineAsync($"Reading {entityId} ({++counter}/{entityCount})");
                     var entity = new Entity(wikidataSite, entityId);
                     await entity.RefreshAsync(EntityQueryOptions.FetchAllProperties, new[] { "cs" });

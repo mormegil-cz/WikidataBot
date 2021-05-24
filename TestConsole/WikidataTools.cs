@@ -62,6 +62,16 @@ namespace TestConsole
             }
         }
 
+        public static IEnumerable<IList<string>> GetResultsFromApi(JToken results, IList<string> treeSelector, IList<string> fields)
+        {
+            var pointer = results;
+            foreach (var branch in treeSelector) pointer = pointer[branch];
+            foreach (var result in pointer)
+            {
+                yield return fields.Select(field => result[field].Value<string>()).ToList();
+            }
+        }
+
         public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').LastOrDefault();
 
         public static string GenerateRandomEditGroupId()
