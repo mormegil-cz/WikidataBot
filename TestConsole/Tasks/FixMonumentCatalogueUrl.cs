@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using TestConsole.MWApi;
-using WikiClientLibrary.Client;
+using WikiClientLibrary;
 using WikiClientLibrary.Sites;
 using WikiClientLibrary.Wikibase;
 using WikiClientLibrary.Wikibase.DataTypes;
@@ -16,6 +16,7 @@ namespace TestConsole.Tasks
     public class FixMonumentCatalogueUrl
     {
         private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/\?mode=parametric&catalogNumber=([0-9]+)&presenter=ElementsResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        // private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/?mode=parametric&indexId=([0-9]+)&presenter=LegalStatesResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private const int BatchSize = 500;
 
@@ -25,13 +26,21 @@ namespace TestConsole.Tasks
             var editSummary = MakeEditSummary("Fixing reference URLs to Památkový katalog", editGroupId);
 
             int entityCount;
+            var first = true;
             do
             {
+                if (!first)
+                {
+                    await Console.Error.WriteLineAsync($"...");
+                    Thread.Sleep(30000);
+                }
+                first = false;
                 await Console.Error.WriteLineAsync("Retrieving data from MW API");
                 var entities = GetResultsFromApi(
                         await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("https", "pamatkovykatalog.cz/?mode=parametric&catalogNumber=", BatchSize), true, CancellationToken.None),
-                        new List<string> { "query", "exturlusage" },
-                        new List<string> { "title" }
+                        //await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("https", "pamatkovykatalog.cz/?mode=parametric&indexId=", BatchSize), true, CancellationToken.None),
+                        new List<string> {"query", "exturlusage"},
+                        new List<string> {"title"}
                     )
                     .ToList();
                 var counter = 0;
@@ -42,12 +51,13 @@ namespace TestConsole.Tasks
                     var entityId = row[0];
                     await Console.Error.WriteLineAsync($"Reading {entityId} ({++counter}/{entityCount})");
                     var entity = new Entity(wikidataSite, entityId);
-                    await entity.RefreshAsync(EntityQueryOptions.FetchAllProperties, new[] { "cs" });
+                    await entity.RefreshAsync(EntityQueryOptions.FetchAllProperties, new[] {"cs"});
 
                     var refClaimsAndSnaks = entity.Claims
                         .SelectMany(c => c.References.Select(r => (c, r)))
                         .SelectMany(cr => cr.r.Snaks.Select(s => (cr.c, cr.r, s)))
                         .Where(crs => crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("https://pamatkovykatalog.cz/?mode=parametric&catalogNumber="))
+                        //.Where(crs => crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("https://pamatkovykatalog.cz/?mode=parametric&indexId="))
                         .ToList();
 
                     if (refClaimsAndSnaks.Count == 0)
@@ -69,8 +79,10 @@ namespace TestConsole.Tasks
                         }
                         var identifier = match.Groups[1].Value;
                         refSnak.DataValue = "https://pamatkovykatalog.cz/soupis/podle-relevance/1/seznam?katCislo=" + identifier;
+                        // refSnak.DataValue = "https://pamatkovykatalog.cz/uskp/podle-relevance/1/seznam/?uskp=" + identifier;
                         r.Snaks.Add(
                             new Snak("P4075", identifier, BuiltInDataTypes.String)
+                            //new Snak("P762", identifier, BuiltInDataTypes.String)
                         );
                     }
 
@@ -78,13 +90,14 @@ namespace TestConsole.Tasks
                     await Console.Error.WriteLineAsync($"Editing {entityId} ({edits.Count} claims)");
                     var options = EntityEditOptions.Bot;
                     if (edits.Count > 1) options |= EntityEditOptions.Bulk;
-                    await entity.EditAsync(edits, editSummary, options);
-                }
-
-                if (entityCount == BatchSize)
-                {
-                    await Console.Error.WriteLineAsync($"...");
-                    Thread.Sleep(30000);
+                    try
+                    {
+                        await entity.EditAsync(edits, editSummary, options);
+                    }
+                    catch (OperationConflictException e)
+                    {
+                        await Console.Error.WriteLineAsync(e.ToString());
+                    }
                 }
             } while (entityCount == BatchSize);
 
