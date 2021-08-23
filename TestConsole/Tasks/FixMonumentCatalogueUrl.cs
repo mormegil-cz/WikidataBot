@@ -15,15 +15,15 @@ namespace TestConsole.Tasks
 {
     public class FixMonumentCatalogueUrl
     {
-        private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/\?mode=parametric&catalogNumber=([0-9]+)&presenter=ElementsResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        // private static readonly Regex reMatcher = new(@"^https://pamatkovykatalog.cz/?mode=parametric&indexId=([0-9]+)&presenter=LegalStatesResults$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex reMatcherCatalog = new(@"^https?://pamatkovykatalog.cz/\?mode=parametric&catalogNumber=([0-9_]+)&presenter=(ElementsResults|LegalStatesResults)$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex reMatcherIndex = new(@"^https?://pamatkovykatalog.cz/\?mode=parametric&indexId=([0-9/-]+)&presenter=(ElementsResults|LegalStatesResults)$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private const int BatchSize = 500;
 
         public static async Task Run(WikiSite wikidataSite)
         {
             var editGroupId = GenerateRandomEditGroupId();
-            var editSummary = MakeEditSummary("Fixing reference URLs to Památkový katalog", editGroupId);
+            var editSummary = MakeEditSummary("Fixing reference URLs to Czech Heritage Registry", editGroupId);
 
             int entityCount;
             var first = true;
@@ -37,8 +37,8 @@ namespace TestConsole.Tasks
                 first = false;
                 await Console.Error.WriteLineAsync("Retrieving data from MW API");
                 var entities = GetResultsFromApi(
-                        await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("https", "pamatkovykatalog.cz/?mode=parametric&catalogNumber=", BatchSize), true, CancellationToken.None),
-                        //await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("https", "pamatkovykatalog.cz/?mode=parametric&indexId=", BatchSize), true, CancellationToken.None),
+                        //await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("http", "pamatkovykatalog.cz/?mode=parametric&catalogNumber=", BatchSize), true, CancellationToken.None),
+                        await wikidataSite.InvokeMediaWikiApiAsync(new ExtUrlUsageRequestMessage("http", "pamatkovykatalog.cz/?mode=parametric&indexId=", BatchSize), true, CancellationToken.None),
                         new List<string> {"query", "exturlusage"},
                         new List<string> {"title"}
                     )
@@ -56,8 +56,10 @@ namespace TestConsole.Tasks
                     var refClaimsAndSnaks = entity.Claims
                         .SelectMany(c => c.References.Select(r => (c, r)))
                         .SelectMany(cr => cr.r.Snaks.Select(s => (cr.c, cr.r, s)))
-                        .Where(crs => crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("https://pamatkovykatalog.cz/?mode=parametric&catalogNumber="))
-                        //.Where(crs => crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("https://pamatkovykatalog.cz/?mode=parametric&indexId="))
+                        .Where(crs =>
+                            (crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("http://pamatkovykatalog.cz/?mode=parametric&catalogNumber="))
+                            || (crs.s.PropertyId == "P854" && ((string) crs.s.DataValue).StartsWith("http://pamatkovykatalog.cz/?mode=parametric&indexId="))
+                        )
                         .ToList();
 
                     if (refClaimsAndSnaks.Count == 0)
@@ -71,19 +73,13 @@ namespace TestConsole.Tasks
                         var r = refClaimAndSnak.r;
                         var refSnak = refClaimAndSnak.s;
                         var url = (string) refSnak.DataValue;
-                        var match = reMatcher.Match(url);
-                        if (!match.Success)
+                        var fixedCatalog = TryFixUrl(refSnak, r, url, reMatcherCatalog, "https://pamatkovykatalog.cz/soupis/podle-relevance/1/seznam?katCislo=", "P4075");
+                        var fixedIndex = TryFixUrl(refSnak, r, url, reMatcherIndex, "https://pamatkovykatalog.cz/uskp/podle-relevance/1/seznam/?uskp=", "P762");
+                        if (!fixedCatalog && !fixedIndex)
                         {
-                            await Console.Error.WriteLineAsync($"Error matching '{url}'");
+                            await Console.Error.WriteLineAsync("No matching URL!");
                             return;
                         }
-                        var identifier = match.Groups[1].Value;
-                        refSnak.DataValue = "https://pamatkovykatalog.cz/soupis/podle-relevance/1/seznam?katCislo=" + identifier;
-                        // refSnak.DataValue = "https://pamatkovykatalog.cz/uskp/podle-relevance/1/seznam/?uskp=" + identifier;
-                        r.Snaks.Add(
-                            new Snak("P4075", identifier, BuiltInDataTypes.String)
-                            //new Snak("P762", identifier, BuiltInDataTypes.String)
-                        );
                     }
 
                     var edits = refClaimsAndSnaks.Select(cs => new EntityEditEntry(nameof(Entity.Claims), cs.c)).ToList();
@@ -102,6 +98,18 @@ namespace TestConsole.Tasks
             } while (entityCount == BatchSize);
 
             await Console.Error.WriteLineAsync("Done!");
+        }
+
+        private static bool TryFixUrl(Snak refSnak, ClaimReference reference, string url, Regex regex, string urlPrefix, string property)
+        {
+            var match = regex.Match(url);
+            if (!match.Success) return false;
+            var identifier = match.Groups[1].Value;
+            refSnak.DataValue = urlPrefix + identifier;
+            reference.Snaks.Add(
+                new Snak(property, identifier, BuiltInDataTypes.String)
+            );
+            return true;
         }
     }
 }
