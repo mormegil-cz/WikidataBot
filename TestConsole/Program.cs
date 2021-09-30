@@ -40,7 +40,8 @@ namespace TestConsole
             // await ListSparqlQuery.Run(wikidataSite);
             // await ExportPropertyHistory.Run(wikidataSite);
             // await FixMonumentCatalogueUrl.Run(wikidataSite);
-            await UpdateDisambigDescription.Run(wikidataSite);
+            //await UpdateDisambigDescription.Run(wikidataSite);
+            await CovIdFixImport.Run(wikidataSite);
         }
     }
 }
