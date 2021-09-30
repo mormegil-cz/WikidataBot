@@ -25,7 +25,7 @@ namespace TestConsole
         {
             // await MapCsfdToImdb.Run(@"c:\Temp\csfd\csfd-list.csv", @"c:\Temp\csfd\csfd-to-imdb.csv");
 
-			var wikidataSite = await WikidataTools.Init();
+            var wikidataSite = await WikidataTools.Init();
 
             var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new {username = "", password = ""});
 
@@ -39,7 +39,8 @@ namespace TestConsole
             // await CzechStationsPolishAccuracy.Run(wikidataSite);
             // await ListSparqlQuery.Run(wikidataSite);
             // await ExportPropertyHistory.Run(wikidataSite);
-            await FixMonumentCatalogueUrl.Run(wikidataSite);
+            // await FixMonumentCatalogueUrl.Run(wikidataSite);
+            await UpdateDisambigDescription.Run(wikidataSite);
         }
     }
 }

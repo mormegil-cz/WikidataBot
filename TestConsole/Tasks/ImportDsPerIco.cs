@@ -17,7 +17,7 @@ namespace TestConsole.Tasks
     {
         private const int QueryBatchSize = 100;
 
-        private const int QuerySkip = 2245;
+        private const int QuerySkip = 0;
 
         private static int MissingEntries = 0;
         private static int UpToDateEntries = 0;
@@ -29,10 +29,11 @@ namespace TestConsole.Tasks
             var queryBatch = 0;
             try
             {
+                var missingIcos = new HashSet<string>(File.ReadAllLines(@"c:\Users\petrk\Downloads\missing-dsid-icos.txt"));
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20210114092051.xml").Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-2021-08-23.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -325,7 +326,7 @@ namespace TestConsole.Tasks
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2021, 1, 14, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+                new Snak("P813", new WbTime(2021, 8, 23, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
             ));
             var edits = new[] {new EntityEditEntry(nameof(Entity.Claims), claimDsid)};
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
