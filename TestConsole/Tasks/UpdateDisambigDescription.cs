@@ -48,6 +48,7 @@ LIMIT 100
                     if (entity.Descriptions == null)
                     {
                         await Console.Error.WriteLineAsync($"WARNING! Unable to read entity {entityId}!");
+                        duplicateItems.Add((entityId, null));
                         continue;
                     }
 
@@ -55,6 +56,7 @@ LIMIT 100
                     if (currDesc != "rozcestník")
                     {
                         if (currDesc != "rozcestník na projektech Wikimedia") await Console.Error.WriteLineAsync($"WARNING! Entity {entityId}: Unexpected description {currDesc}'");
+                        duplicateItems.Add((entityId, null));
                         continue;
                     }
 
