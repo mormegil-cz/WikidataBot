@@ -27,7 +27,7 @@ namespace TestConsole
 
             var wikidataSite = await WikidataTools.Init();
 
-            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new {username = "", password = ""});
+            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "" });
 
             await Console.Error.WriteLineAsync("Logging in...");
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));

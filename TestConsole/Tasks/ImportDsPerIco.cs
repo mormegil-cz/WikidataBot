@@ -29,11 +29,19 @@ namespace TestConsole.Tasks
             var queryBatch = 0;
             try
             {
-                var missingIcos = new HashSet<string>(File.ReadAllLines(@"c:\Users\petrk\Downloads\missing-dsid-icos.txt"));
+                Console.WriteLine("Executing query...");
+                var missingIcos = GetEntities(await GetSparqlResults(@"
+SELECT ?ico WHERE {
+  ?item wdt:P4156 ?ico.
+  MINUS { ?item wdt:P8987 ?ds }
+}
+"), new Dictionary<string, string> { { "ico", "literal" } }).Select(row => row[0]).ToHashSet();
+
+                Console.WriteLine($"{missingIcos.Count} IČOs without DS ID");
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-2021-08-23.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20211013092109.xml").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -92,8 +100,8 @@ namespace TestConsole.Tasks
             }
             sparql.Append(")) OPTIONAL { ?item wdt:P8987 ?dsid } }");
 
-            var queryResults = GetEntities(await GetSparqlResults(sparql.ToString()), new Dictionary<string, string> {{"item", "uri"}, {"dsid", "literal"}, {"ico", "literal"}}).ToList();
-            var dataAtWd = queryResults.ToDictionaryLax(queryItem => queryItem[2], queryItem => new {item = queryItem[0], dsid = queryItem[1]});
+            var queryResults = GetEntities(await GetSparqlResults(sparql.ToString()), new Dictionary<string, string> { { "item", "uri" }, { "dsid", "literal" }, { "ico", "literal" } }).ToList();
+            var dataAtWd = queryResults.ToDictionaryLax(queryItem => queryItem[2], queryItem => new { item = queryItem[0], dsid = queryItem[1] });
             foreach (var entryToImport in entriesToImport)
             {
                 if (dataAtWd.TryGetValue(entryToImport.Key, out var entryAtWd))
@@ -138,11 +146,11 @@ namespace TestConsole.Tasks
                 {
                     case 0x3C:
                         // plain XML
-                        reader = XmlReader.Create(stream, new XmlReaderSettings {Async = true});
+                        reader = XmlReader.Create(stream, new XmlReaderSettings { Async = true });
                         break;
                     case 0x1F:
                         // GZ-compressed XML
-                        reader = XmlReader.Create(new GZipStream(stream, CompressionMode.Decompress), new XmlReaderSettings {Async = true});
+                        reader = XmlReader.Create(new GZipStream(stream, CompressionMode.Decompress), new XmlReaderSettings { Async = true });
                         break;
                     default:
                         throw new FormatException("Unsupported XML format");
@@ -326,9 +334,9 @@ namespace TestConsole.Tasks
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2021, 8, 23, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+                new Snak("P813", new WbTime(2021, 10, 13, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
             ));
-            var edits = new[] {new EntityEditEntry(nameof(Entity.Claims), claimDsid)};
+            var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
         }
 

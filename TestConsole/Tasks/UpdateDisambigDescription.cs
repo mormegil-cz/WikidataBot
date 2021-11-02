@@ -25,7 +25,7 @@ namespace TestConsole.Tasks
                 await Console.Error.WriteLineAsync($"Batch #{batch} Retrieving data from WQS");
                 var entities = GetEntities(await GetSparqlResults(@"
 SELECT DISTINCT ?item WHERE {
-	?item wdt:P31 wd:Q4167410;
+	?item wdt:P31/wdt:P279* wd:Q4167410;
           schema:description 'rozcestník'@cs.
   MINUS {
     VALUES ?item { " + String.Join(' ', duplicateItems.Select(item => "wd:" + item.Item1)) + @" }
