@@ -41,7 +41,7 @@ SELECT ?ico WHERE {
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20211013092109.xml").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20211102.xml").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -297,7 +297,7 @@ SELECT ?ico WHERE {
         public async Task ImportEntry(string dsid, string item)
         {
             var qid = GetEntityIdFromUri(item);
-            await outputWriter.WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2021-01-11T00:00:00Z/11");
+            await outputWriter.WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2021-11-02T00:00:00Z/11");
         }
 
         public void Dispose()
@@ -334,7 +334,7 @@ SELECT ?ico WHERE {
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2021, 10, 13, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+                new Snak("P813", new WbTime(2021, 11, 02, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
             ));
             var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
