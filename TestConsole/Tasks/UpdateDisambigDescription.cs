@@ -18,7 +18,7 @@ namespace TestConsole.Tasks
         public static async Task Run(WikiSite wikidataSite)
         {
             var batch = 0;
-            var duplicateItems = new HashSet<(string, string)>();
+            var duplicateItems = new HashSet<(string, string?)>();
             while (true)
             {
                 ++batch;

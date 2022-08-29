@@ -17,7 +17,7 @@ namespace TestConsole.Tasks
         public static async Task Run(WikiSite wikidataSite)
         {
             var batch = 0;
-            // var duplicateItems = new HashSet<(string, string)>();
+            var problematicItems = new HashSet<string>();
             while (true)
             {
                 ++batch;
@@ -29,9 +29,19 @@ SELECT ?item ?ico WHERE {
   VALUES ?form {
     wd:Q3742494
     wd:Q15646299
+    wd:Q43749575
+    wd:Q279014
+    wd:Q56517350
+    wd:Q12041908
+    wd:Q43751707
+    wd:Q16917889
+    wd:Q56457912
   }
   ?item wdt:P1454 ?form.
   MINUS { ?item wdt:P1320 _:b3. }
+  MINUS {
+    VALUES ?item { " + String.Join(' ', problematicItems.Select(item => "wd:" + item)) + @" }
+  }
 }
 LIMIT 100
 "), new Dictionary<string, string> { { "item", "uri" }, { "ico", "literal" } }).ToList();
@@ -50,14 +60,14 @@ LIMIT 100
                     if (entity.Claims == null)
                     {
                         await Console.Error.WriteLineAsync($"WARNING! Unable to read entity {entityId}!");
-                        // duplicateItems.Add((entityId, null));
+                        problematicItems.Add(entityId);
                         continue;
                     }
 
                     if (entity.Claims.ContainsKey("P1320"))
                     {
                         await Console.Error.WriteLineAsync($"WARNING! Entity {entityId} already contains ID");
-                        // duplicateItems.Add((entityId, null));
+                        problematicItems.Add(entityId);
                         continue;
                     }
 

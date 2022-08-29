@@ -37,12 +37,12 @@ namespace TestConsole
             return client.GetStringAsync(uriBuilder.Uri);
         }
 
-        public static IEnumerable<IList<string>> GetEntities(string queryResultJson, IDictionary<string, string> fields)
+        public static IEnumerable<IList<string?>> GetEntities(string queryResultJson, IDictionary<string, string> fields)
         {
             var queryResultObj = JObject.Parse(queryResultJson);
-            foreach (var result in queryResultObj["results"]["bindings"])
+            foreach (var result in (queryResultObj["results"] ?? throw new FormatException())["bindings"] ?? throw new FormatException())
             {
-                var row = new List<string>(fields.Count);
+                var row = new List<string?>(fields.Count);
                 foreach (var (key, value) in fields)
                 {
                     var item = result[key];
@@ -52,9 +52,9 @@ namespace TestConsole
                     }
                     else
                     {
-                        var itemType = item["type"].Value<string>();
+                        var itemType = (item["type"] ?? throw new FormatException()).Value<string>();
                         if (itemType != value) throw new FormatException($"{value} expected, {itemType} found");
-                        row.Add(item["value"].Value<string>());
+                        row.Add((item["value"] ?? throw new FormatException()).Value<string>());
                     }
                 }
 

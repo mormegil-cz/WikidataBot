@@ -41,7 +41,8 @@ SELECT ?ico WHERE {
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\datafile-seznam_ds_po-20211102.xml").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_po-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -101,7 +102,7 @@ SELECT ?ico WHERE {
             sparql.Append(")) OPTIONAL { ?item wdt:P8987 ?dsid } }");
 
             var queryResults = GetEntities(await GetSparqlResults(sparql.ToString()), new Dictionary<string, string> { { "item", "uri" }, { "dsid", "literal" }, { "ico", "literal" } }).ToList();
-            var dataAtWd = queryResults.ToDictionaryLax(queryItem => queryItem[2], queryItem => new { item = queryItem[0], dsid = queryItem[1] });
+            var dataAtWd = queryResults.ToDictionaryLax(queryItem => queryItem[2]!, queryItem => new { item = queryItem[0]!, dsid = queryItem[1]! });
             foreach (var entryToImport in entriesToImport)
             {
                 if (dataAtWd.TryGetValue(entryToImport.Key, out var entryAtWd))
@@ -160,8 +161,8 @@ SELECT ?ico WHERE {
                 while (await reader.MoveToContentAsync() == XmlNodeType.Element)
                 {
                     reader.ReadStartElement("box");
-                    string ico = null;
-                    string dsid = null;
+                    string? ico = null;
+                    string? dsid = null;
                     var isMaster = true;
                     while (await reader.MoveToContentAsync() == XmlNodeType.Element)
                     {
@@ -251,7 +252,7 @@ SELECT ?ico WHERE {
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TSource, TValue> valueSelector
-        )
+        ) where TKey : notnull
         {
             var result = new Dictionary<TKey, TValue>();
             foreach (var item in source)
@@ -280,7 +281,7 @@ SELECT ?ico WHERE {
 
         private int importBatch;
         private int batchStart;
-        TextWriter outputWriter;
+        TextWriter? outputWriter;
 
         public Task StartQueryBatchProcessing(int queryBatchNumber)
         {
@@ -297,7 +298,7 @@ SELECT ?ico WHERE {
         public async Task ImportEntry(string dsid, string item)
         {
             var qid = GetEntityIdFromUri(item);
-            await outputWriter.WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2021-11-02T00:00:00Z/11");
+            await (outputWriter ?? throw new InvalidOperationException("Not started!")).WriteLineAsync($"{qid}\tP8987\t\"{dsid}\"\tS1476\tcs:\"Seznam datových schránek : Orgány veřejné moci\"\tS123\tQ11781499\tS2701\tQ2115\tS854\t\"https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm\"\tS813\t+2022-08-22T00:00:00Z/11");
         }
 
         public void Dispose()
@@ -331,10 +332,12 @@ SELECT ?ico WHERE {
             var claimDsid = new Claim(new Snak("P8987", dsid, BuiltInDataTypes.ExternalId));
             claimDsid.References.Add(new ClaimReference(
                 new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Právnické osoby"), BuiltInDataTypes.MonolingualText),
+                // new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Orgány veřejné moci"), BuiltInDataTypes.MonolingualText),
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2021, 11, 02, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+                // new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
+                new Snak("P813", new WbTime(2022, 08, 22, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
             ));
             var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
