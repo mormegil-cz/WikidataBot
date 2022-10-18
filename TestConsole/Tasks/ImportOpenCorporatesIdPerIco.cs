@@ -52,8 +52,9 @@ LIMIT 100
                 await Console.Error.WriteLineAsync($" processing {count} entities...");
                 foreach (var row in entities)
                 {
+                    ++counter;
                     var entityId = GetEntityIdFromUri(row[0]);
-                    // await Console.Error.WriteLineAsync($"Reading {entityId} ({++counter}/{count})");
+                    // await Console.Error.WriteLineAsync($"Reading {entityId} ({counter}/{count})");
                     var entity = new Entity(wikidataSite, entityId);
                     await entity.RefreshAsync(EntityQueryOptions.FetchClaims, new[] { "cs" });
 
@@ -78,7 +79,7 @@ LIMIT 100
                     {
                         new(nameof(Entity.Claims), new Claim(new Snak("P1320", openCorporatesId, BuiltInDataTypes.ExternalId))),
                     };
-                    // await Console.Error.WriteLineAsync($"Editing {entityId}");
+                    await Console.Error.WriteLineAsync($"Editing {entityId} ({counter}/{count})");
                     await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
                 }
             }
