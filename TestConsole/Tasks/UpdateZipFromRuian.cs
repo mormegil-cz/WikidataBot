@@ -16,12 +16,14 @@ namespace TestConsole.Tasks;
 public class UpdateZipFromRuian
 {
     private const string BasePath = @"y:\_mine\wikidata-imports\psc";
-    private const string ImportCsvFile = "20220731_OB_ADR_csv.zip";
-    private const string ImportCsvDate = "2022-07-31";
+    private static readonly DateOnly ImportCsvDate = new(2022, 09, 30);
+    private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
+
+    private static readonly string ImportCsvFile = $"{ImportCsvDate:yyyyMMdd}_OB_ADR_csv.zip";
     private static readonly Uri gregorianCalendarUri = new("http://www.wikidata.org/entity/Q1985727");
-    private static readonly WbTime importCsvWbTime = new(2022, 07, 31, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
+    private static readonly WbTime importCsvWbTime = new(ImportCsvDate.Year, ImportCsvDate.Month, ImportCsvDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
     private static readonly string importDate = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    private static readonly WbTime importWbTime = new(2022, 08, 26, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
+    private static readonly WbTime importWbTime = new(ImportTimestamp.Year, ImportTimestamp.Month, ImportTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
 
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Updating ZIP codes for streets according to RÚIAN", EditGroupId);
