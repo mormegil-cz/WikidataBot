@@ -23,6 +23,7 @@ namespace TestConsole.Tasks
         private static int UpToDateEntries = 0;
         private static int DifferentEntries = 0;
         private static int ImportedEntries = 0;
+        private static HashSet<string> RemainingMissingIcos = new();
 
         public static async Task Run(WikiSite wikidataSite)
         {
@@ -35,14 +36,15 @@ SELECT ?ico WHERE {
   ?item wdt:P4156 ?ico.
   MINUS { ?item wdt:P8987 ?ds }
 }
-"), new Dictionary<string, string> { { "ico", "literal" } }).Select(row => row[0]).ToHashSet();
+"), new Dictionary<string, string> { { "ico", "literal" } }).Select(row => row[0]!).ToHashSet();
 
+                RemainingMissingIcos = new HashSet<string>(missingIcos);
                 Console.WriteLine($"{missingIcos.Count} IČOs without DS ID");
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
                     await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_po-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
-                    // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                        // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -76,14 +78,19 @@ SELECT ?ico WHERE {
                         await ImportBatch(batch, importer);
                     }
                 }
+
+                foreach (var remainingIco in RemainingMissingIcos)
+                {
+                    Console.WriteLine($"IČO {remainingIco} not found in DS data");
+                }
             }
             catch (Exception)
             {
-                Console.WriteLine("Aborted with error at batch {4}; {0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries, queryBatch);
+                Console.WriteLine("Aborted with error at batch {4}; {0} entries imported, {1} missing, {2} already up-to-date, {3} different, {5} remaining unprocessed", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries, queryBatch, RemainingMissingIcos.Count);
                 throw;
             }
 
-            Console.WriteLine("{0} entries imported, {1} missing, {2} already up-to-date, {3} different", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries);
+            Console.WriteLine("{0} entries imported, {1} missing, {2} already up-to-date, {3} different, {4} unknown", ImportedEntries, MissingEntries, UpToDateEntries, DifferentEntries, RemainingMissingIcos.Count);
         }
 
         private static async Task ImportBatch(KeyValuePair<string, string>[] entriesToImport, IImporter importer)
@@ -105,6 +112,8 @@ SELECT ?ico WHERE {
             var dataAtWd = queryResults.ToDictionaryLax(queryItem => queryItem[2]!, queryItem => new { item = queryItem[0]!, dsid = queryItem[1]! });
             foreach (var entryToImport in entriesToImport)
             {
+                RemainingMissingIcos.Remove(entryToImport.Key);
+
                 if (dataAtWd.TryGetValue(entryToImport.Key, out var entryAtWd))
                 {
                     if (String.IsNullOrEmpty(entryAtWd.dsid))
