@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:U="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/uvis_datatypes/v_1.0.3" xmlns:D="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3" xmlns:are="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_answer_basic/v_1.0.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_answer_basic/v_1.0.3" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2010-10-12">
+	<xsd:annotation>
+		<xsd:documentation>
+Základní údaje o ekonomickém subjektu předávané z ARES
+schéma pro odpověď Basic, informace o tzn. nejlepší větě
+verze 1.0.2  
+(verze 1.0.1 nebyla vytvořena. Číslo verze je shodné se schématem ares_datatypes a jménem programu třetí vrstvy. Rozdíl proti 1.0.0 je v D:ROR.)
+Copyright 2007-2009 Asseco Czech Republic, a.s. Všechna práva vyhrazena
+Copyright Asseco Central Europe, a.s. 2010
+
+    		</xsd:documentation>
+		<xsd:appinfo>
+			<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.0/">
+				<rdf:Description rdf:about="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_request_orrg/v_1.0.3">
+					<dc:title>XML Schema, detail Basic</dc:title>
+					<dc:creator>Pavel Srb (Pavel.Srb@asseco-ce.com)</dc:creator>
+					<dc:creator>Asseco Central Europe, a.s.</dc:creator>
+					<dc:subject>XML Schema; ARES; Basic; nejlepší věta</dc:subject>
+					<dc:description>Detail Basic vybírá z tzv. nejlepší věty v jádru ARES + vybrané info přes další zdroje</dc:description>
+					<dc:publisher>Ministerstvo financí České republiky </dc:publisher>
+					<dc:date>2010-07-16</dc:date>
+					<dc:type> XML Schema</dc:type>
+					<dc:identifier>http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_request_orrg/v_1.0.3/ares_request_orrg.xsd</dc:identifier>
+					<dc:format>text/xml</dc:format>
+					<dc:language>cz</dc:language>
+					<dc:rights>  Asseco Central Europe, a.s. 2010</dc:rights>
+				</rdf:Description>
+			</rdf:RDF>
+		</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:import namespace="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3" schemaLocation="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3/ares_datatypes_v_1.0.3.xsd"/>
+	<xsd:element name="Ares_odpovedi">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Odpoved" type="D:odpoved_basic" maxOccurs="unbounded"/>
+				<xsd:element name="Fault" type="D:chybova_odpoved" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:attribute name="odpoved_datum_cas" type="xsd:dateTime" use="required"/>
+			<xsd:attribute name="odpoved_pocet" type="xsd:int" use="required"/>
+			<xsd:attribute name="odpoved_typ" type="D:ares_dotaz_typ" fixed="Basic"/>
+			<xsd:attribute name="vystup_format" type="D:vystup_format" use="optional" default="XML"/>
+			<xsd:attribute name="xslt" type="D:xslt_ks" use="optional" default="klient"/>
+			<xsd:attribute name="validation_XSLT" type="xsd:string" use="optional"/>
+			<xsd:attribute name="Id" type="xsd:string" use="optional"/>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
