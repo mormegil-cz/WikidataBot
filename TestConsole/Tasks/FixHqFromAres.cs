@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using TestConsole.Integration.Ares;
 using WikiClientLibrary.Sites;
 using WikiClientLibrary.Wikibase;
+using WikiClientLibrary.Wikibase.DataTypes;
 using static TestConsole.WikidataTools;
 
 namespace TestConsole.Tasks;
@@ -14,12 +15,23 @@ public class FixHqFromAres
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Fixing broken HQ location from ARES", EditGroupId);
 
+    private const string EntityQidAres = "Q8182488";
+    private static readonly HashSet<string> KnownQualifierProperties = new() { WikidataProperties.Street, WikidataProperties.ConscriptionNumber, WikidataProperties.StreetNumber, WikidataProperties.ZipCode };
+
     public static async Task Run(WikiSite wikidataSite)
     {
+        var accessTimestamp = DateTime.UtcNow;
+        var accessDate = new WbTime(accessTimestamp.Year, accessTimestamp.Month, accessTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
+
         var labelCache = WikidataCache.CreateLabelCache(wikidataSite, "cs");
         var streetUriCache = WikidataCache.CreateSparqlCache(@"
 SELECT ?item WHERE {
     ?item wdt:P4533 '$PARAM$'.
+}
+", "item", "uri");
+        var municipalityUriCache = WikidataCache.CreateSparqlCache(@"
+SELECT ?item WHERE {
+    ?item wdt:P7606 '$PARAM$'.
 }
 ", "item", "uri");
 
@@ -61,7 +73,7 @@ LIMIT 100
                     continue;
                 }
 
-                if (!entity.Claims.ContainsKey("P159"))
+                if (!entity.Claims.ContainsKey(WikidataProperties.HqLocation))
                 {
                     // ??!?
                     await Console.Error.WriteLineAsync($"WARNING! Entity {entityId} does not contain HQ?!");
@@ -69,13 +81,15 @@ LIMIT 100
                     continue;
                 }
 
-                var hqClaims = entity.Claims["P159"];
+                var hqClaims = entity.Claims[WikidataProperties.HqLocation];
                 if (hqClaims.Count != 1)
                 {
                     await Console.Error.WriteLineAsync($"WARNING! Entity {entityId} has {hqClaims.Count} HQ claims");
                     problematicItems.Add(entityId);
                     continue;
                 }
+
+                // var accessDate = WbTime.FromDateTime(DateTime.UtcNow, WikibaseTimePrecision.Second);
 
                 var ico = row[1] ?? throw new FormatException("Missing ico in WQS response!");
                 var aresData = await AresRestApi.GetAresData(ico);
@@ -85,44 +99,98 @@ LIMIT 100
                     problematicItems.Add(entityId);
                     continue;
                 }
+                if (aresData.AA?.AU == null)
+                {
+                    await Console.Error.WriteLineAsync($"WARNING! No address data in ARES for {entityId} ({ico})");
+                    problematicItems.Add(entityId);
+                    continue;
+                }
 
                 var hqLocationAddress = aresData.AA;
                 if (hqLocationAddress.KS != "203")
                 {
-                    await Console.Error.WriteLineAsync($"WARNING! Ignoring non-CZ HQ location for {entityId}: {hqLocationAddress.KS}");
+                    await Console.Error.WriteLineAsync($"WARNING! Ignoring non-CZ HQ location for {entityId} ({ico}): {hqLocationAddress.KS}");
                     problematicItems.Add(entityId);
                     continue;
                 }
+                var hqLocationAddressCodes = aresData.AA.AU;
+
+                var municipalityRuian = hqLocationAddressCodes.KO;
+                if (municipalityRuian == null)
+                {
+                    await Console.Error.WriteLineAsync($"WARNING! No municipality in ARES for {entityId} ({ico})");
+                    problematicItems.Add(entityId);
+                    continue;
+                }
+                var streetRuian = hqLocationAddressCodes.KUL;
 
                 var currentHqClaim = hqClaims.Single();
-                var currentHqMunicipalityQid = (string)currentHqClaim.MainSnak.DataValue;
 
-                var currentHqMunicipalityLabel = await labelCache.Get(currentHqMunicipalityQid);
-                if (hqLocationAddress.N != currentHqMunicipalityLabel)
+                if (currentHqClaim.Qualifiers.Any(q => !KnownQualifierProperties.Contains(q.PropertyId)))
                 {
-                    await Console.Error.WriteLineAsync($"WARNING! HQ municipality mismatch for {entityId}: {currentHqMunicipalityLabel} vs {hqLocationAddress.N}");
+                    await Console.Error.WriteLineAsync($"WARNING! {entityId} is qualified with unsupported qualifier");
                     problematicItems.Add(entityId);
                     continue;
                 }
 
-                
-                
-                
-                // var newHqClaim = new Claim(new Snak("P159", currentHqMunicipalityQid, currentHqClaim.MainSnak.DataType));
-                //
-                // newHqClaim.Qualifiers.Add();
-                //
-                //
-                // var edits = new List<EntityEditEntry>
-                // {
-                //     new(nameof(Entity.Claims), currentHqClaim, EntityEditEntryState.Removed),
-                //     new(nameof(Entity.Claims), newHqClaim)
-                // };
-                // await Console.Error.WriteLineAsync($"Editing {entityId} ({counter}/{count})");
-                // await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
+                var aresMunicipalityQid = await GetQidFromCache(municipalityUriCache, municipalityRuian);
+                var aresStreetQid = streetRuian == null ? null : await GetQidFromCache(streetUriCache, streetRuian);
+
+                var currentHqMunicipalityQid = (string)currentHqClaim.MainSnak.DataValue;
+                if (currentHqMunicipalityQid != aresMunicipalityQid)
+                {
+                    await Console.Error.WriteLineAsync($"WARNING! HQ municipality mismatch for {entityId}: {currentHqMunicipalityQid} vs {aresMunicipalityQid} ({hqLocationAddress.N})");
+                    problematicItems.Add(entityId);
+                    continue;
+                }
+
+                var newHqClaim = new Claim(new Snak(WikidataProperties.HqLocation, aresMunicipalityQid, BuiltInDataTypes.WikibaseItem));
+                if (aresStreetQid != null) newHqClaim.Qualifiers.Add(new Snak(WikidataProperties.Street, aresStreetQid, BuiltInDataTypes.WikibaseItem));
+                if (hqLocationAddressCodes.CDSpecified) newHqClaim.Qualifiers.Add(new Snak(WikidataProperties.ConscriptionNumber, StreetNumberType(hqLocationAddressCodes.TCD, hqLocationAddressCodes.TCDSpecified) + hqLocationAddressCodes.CD, BuiltInDataTypes.String));
+                if (hqLocationAddressCodes.CO != null) newHqClaim.Qualifiers.Add(new Snak(WikidataProperties.StreetNumber, hqLocationAddressCodes.CO, BuiltInDataTypes.String));
+                if (hqLocationAddressCodes.PSC != null) newHqClaim.Qualifiers.Add(new Snak(WikidataProperties.ZipCode, FormatZip(hqLocationAddressCodes.PSC), BuiltInDataTypes.String));
+
+                newHqClaim.References.Add(new ClaimReference(
+                    new Snak(WikidataProperties.StatedIn, EntityQidAres, BuiltInDataTypes.WikibaseItem),
+                    new Snak(WikidataProperties.ReferenceUrl, AresRestApi.GetAresUrl(ico), BuiltInDataTypes.Url),
+                    new Snak(WikidataProperties.AccessDate, accessDate, BuiltInDataTypes.Time)
+                ));
+
+                var edits = new List<EntityEditEntry>
+                {
+                    new(nameof(Entity.Claims), currentHqClaim, EntityEditEntryState.Removed),
+                    new(nameof(Entity.Claims), newHqClaim)
+                };
+                await Console.Error.WriteLineAsync($"Editing {entityId} ({counter}/{count})");
+                await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
             }
         }
 
         await Console.Error.WriteLineAsync("Done!");
+    }
+
+    private static string FormatZip(string zip)
+    {
+        if (zip.Length != 5) throw new FormatException("Unknown ZIP format");
+        return zip.Insert(3, "\u00A0");
+    }
+
+    private static string StreetNumberType(sbyte type, bool typeSpecified)
+    {
+        if (!typeSpecified) return "";
+        return type switch
+        {
+            1 => "",
+            2 => "č.ev.",
+            _ => throw new FormatException($"Unsupported street number type {type}")
+        };
+    }
+
+    private static async Task<string> GetQidFromCache(WikidataCache<string, IList<string?>> cache, string param)
+    {
+        var result = await cache.Get(param);
+        if (result.Count != 1) throw new FormatException($"Unable to determine entity for '{param}'");
+        var uri = result.Single() ?? throw new FormatException("Invalid entity for '{param}'");
+        return GetEntityIdFromUri(uri);
     }
 }

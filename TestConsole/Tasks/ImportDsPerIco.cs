@@ -320,7 +320,6 @@ SELECT ?ico WHERE {
     {
         private static readonly string EditGroupId = GenerateRandomEditGroupId();
         private static readonly string EditSummary = MakeEditSummary("DS ID import for companies based on IČO", EditGroupId);
-        private static readonly Uri GregorianCalendarUri = new Uri("http://www.wikidata.org/entity/Q1985727");
 
         private readonly WikiSite wikidataSite;
 
@@ -346,7 +345,7 @@ SELECT ?ico WHERE {
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
                 // new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2022, 08, 22, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri), BuiltInDataTypes.Time)
+                new Snak("P813", new WbTime(2022, 08, 22, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
             ));
             var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);

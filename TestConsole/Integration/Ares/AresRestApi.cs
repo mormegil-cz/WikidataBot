@@ -39,4 +39,6 @@ public static class AresRestApi
         
         return aresData.Odpoved[0].VBAS[0];
     }
+
+    public static string GetAresUrl(string ico) => httpClient.BaseAddress + "&ico=" + ico;
 }
