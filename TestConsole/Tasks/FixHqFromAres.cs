@@ -16,7 +16,7 @@ public class FixHqFromAres
     private static readonly string EditSummary = MakeEditSummary("Fixing broken HQ location from ARES", EditGroupId);
 
     private const string EntityQidAres = "Q8182488";
-    private static readonly HashSet<string> KnownQualifierProperties = new() { WikidataProperties.Street, WikidataProperties.ConscriptionNumber, WikidataProperties.StreetNumber, WikidataProperties.ZipCode };
+    private static readonly HashSet<string> KnownQualifierProperties = new() { WikidataProperties.Street, WikidataProperties.ConscriptionNumber, WikidataProperties.StreetNumber, WikidataProperties.ZipCode, WikidataProperties.LocatedInAdminEntity, WikidataProperties.Coordinates };
 
     public static async Task Run(WikiSite wikidataSite)
     {
@@ -88,6 +88,14 @@ LIMIT 100
                     problematicItems.Add(entityId);
                     continue;
                 }
+                var currentHqClaim = hqClaims.Single();
+
+                if (!currentHqClaim.Qualifiers.Any(q => q.PropertyId == WikidataProperties.ZipCode && !Char.IsNumber(((string)q.DataValue)[0])))
+                {
+                    await Console.Error.WriteLineAsync($"WARNING! Entity {entityId} has probably been fixed already?");
+                    problematicItems.Add(entityId);
+                    continue;
+                }
 
                 // var accessDate = WbTime.FromDateTime(DateTime.UtcNow, WikibaseTimePrecision.Second);
 
@@ -124,8 +132,6 @@ LIMIT 100
                 }
                 var streetRuian = hqLocationAddressCodes.KUL;
 
-                var currentHqClaim = hqClaims.Single();
-
                 if (currentHqClaim.Qualifiers.Any(q => !KnownQualifierProperties.Contains(q.PropertyId)))
                 {
                     await Console.Error.WriteLineAsync($"WARNING! {entityId} is qualified with unsupported qualifier");
@@ -136,13 +142,13 @@ LIMIT 100
                 var aresMunicipalityQid = await GetQidFromCache(municipalityUriCache, municipalityRuian);
                 var aresStreetQid = streetRuian == null ? null : await GetQidFromCache(streetUriCache, streetRuian);
 
-                var currentHqMunicipalityQid = (string)currentHqClaim.MainSnak.DataValue;
-                if (currentHqMunicipalityQid != aresMunicipalityQid)
-                {
-                    await Console.Error.WriteLineAsync($"WARNING! HQ municipality mismatch for {entityId}: {currentHqMunicipalityQid} vs {aresMunicipalityQid} ({hqLocationAddress.N})");
-                    problematicItems.Add(entityId);
-                    continue;
-                }
+                // var currentHqMunicipalityQid = (string)currentHqClaim.MainSnak.DataValue;
+                // if (currentHqMunicipalityQid != aresMunicipalityQid)
+                // {
+                //     await Console.Error.WriteLineAsync($"WARNING! HQ municipality mismatch for {entityId}: {currentHqMunicipalityQid} vs {aresMunicipalityQid} ({hqLocationAddress.N})");
+                //     problematicItems.Add(entityId);
+                //     continue;
+                // }
 
                 var newHqClaim = new Claim(new Snak(WikidataProperties.HqLocation, aresMunicipalityQid, BuiltInDataTypes.WikibaseItem));
                 if (aresStreetQid != null) newHqClaim.Qualifiers.Add(new Snak(WikidataProperties.Street, aresStreetQid, BuiltInDataTypes.WikibaseItem));
