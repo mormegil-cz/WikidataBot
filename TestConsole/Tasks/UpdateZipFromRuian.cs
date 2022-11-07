@@ -20,10 +20,9 @@ public class UpdateZipFromRuian
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     private static readonly string ImportCsvFile = $"{ImportCsvDate:yyyyMMdd}_OB_ADR_csv.zip";
-    private static readonly Uri gregorianCalendarUri = new("http://www.wikidata.org/entity/Q1985727");
-    private static readonly WbTime importCsvWbTime = new(ImportCsvDate.Year, ImportCsvDate.Month, ImportCsvDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
+    private static readonly WbTime importCsvWbTime = new(ImportCsvDate.Year, ImportCsvDate.Month, ImportCsvDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
     private static readonly string importDate = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    private static readonly WbTime importWbTime = new(ImportTimestamp.Year, ImportTimestamp.Month, ImportTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, gregorianCalendarUri);
+    private static readonly WbTime importWbTime = new(ImportTimestamp.Year, ImportTimestamp.Month, ImportTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
 
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Updating ZIP codes for streets according to RÚIAN", EditGroupId);

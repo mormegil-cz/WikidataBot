@@ -15,8 +15,7 @@ namespace TestConsole.Tasks
         private static readonly string EditGroupId = GenerateRandomEditGroupId();
         private static readonly string EditSummary = MakeEditSummary("Reimport of changed ČOV IDs", EditGroupId);
 
-        private static readonly Uri GregorianCalendarUri = new("http://www.wikidata.org/entity/Q1985727");
-        private static readonly WbTime CovTimestamp = new(2021, 9, 30, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, GregorianCalendarUri);
+        private static readonly WbTime CovTimestamp = new(2021, 9, 30, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
 
         public static async Task RunImport(WikiSite wikidataSite)
         {

@@ -1,0 +1,2959 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:U="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/uvis_datatypes/v_1.0.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3" targetNamespace="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2013-11-27">
+	<xsd:annotation>
+		<xsd:documentation xml:lang="cs">
+	Návrh schématu s definicemi obecných datových typů ARES verze 1.0.2
+	
+Rozšíření dokumentu:
+výpis RES - listopad 2003
+verze 1.0.2 slouží pro generování verze zkratek 1.0.3
+
+		</xsd:documentation>
+		<xsd:appinfo>
+			<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.0/">
+				<rdf:Description rdf:about="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3">
+					<dc:title>XML Schema s definicemi obecných datových typů ARES verze 1.0.2</dc:title>
+					<dc:creator>Pavel Srb (Pavel.Srb@asseco-ce.com)</dc:creator>
+					<dc:creator>Asseco Czech Republic, a.s.</dc:creator>
+					<dc:subject>XML Schema; obecné datové typy ARES; ARES</dc:subject>
+					<dc:description>Návrh schématu typu XML Schema s definicemi obecných datových typů ARES verze 1.0.2</dc:description>
+					<dc:publisher>Ministerstvo financí České republiky </dc:publisher>
+					<dc:date>2007-05-11</dc:date>
+					<dc:type> XML Schema</dc:type>
+					<dc:identifier>"http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/ares/ares_datatypes/v_1.0.3/ares_datatypes_v_1.0.3.xsd"</dc:identifier>
+					<dc:format>text/xml</dc:format>
+					<dc:language>cz</dc:language>
+					<dc:rights>  Asseco Central Europe, a.s. 2013</dc:rights>
+				</rdf:Description>
+			</rdf:RDF>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	<xsd:import namespace="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/uvis_datatypes/v_1.0.3" schemaLocation="http://wwwinfo.mfcr.cz/ares/xml_doc/schemas/uvis_datatypes/v_1.0.3/uvis_datatypes_v_1.0.3.xsd"/>
+	
+	<xsd:complexType name="uvod">
+		<xsd:annotation>
+			<xsd:documentation>úvod dokumentu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ND" type="U:popis" minOccurs="0"/>
+			<xsd:element name="ADB" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DVY" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="CAS" type="xsd:time" minOccurs="0"/>
+			<xsd:element name="TV" type="U:popis" minOccurs="0"/>
+			<xsd:element name="PDP" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Typ_odkazu" type="U:popis" minOccurs="0"/>
+			<xsd:element name="Typ_odpovedi" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="osoba_textem" id="AA0897">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Nestrukturované jméno fyzické osoby</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="cislo_do_adresy">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číslo domovní kombinované, typ ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="15"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="adresa_textem">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Tová adresa v jednom poli - dle ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="zdroj_type">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Nepovinný atribut některých elementů pro určení původu zdrojového registru</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="2"/>
+			<xsd:maxLength value="5"/>
+			<xsd:enumeration value="ARES"/>
+			<xsd:enumeration value="OR"/>
+			<xsd:enumeration value="RES"/>
+			<xsd:enumeration value="RZP"/>
+			<xsd:enumeration value="RŽP"/>
+			<xsd:enumeration value="RZZ"/>
+			<xsd:enumeration value="DPH"/>
+			<xsd:enumeration value="SD"/>
+			<xsd:enumeration value="SCP"/>
+			<xsd:enumeration value="CEU"/>
+			<xsd:enumeration value="CEDR"/>
+			<xsd:enumeration value="RARIS"/>
+			<xsd:enumeration value="RCNS"/>
+			<xsd:enumeration value="PSH"/>
+			<xsd:enumeration value="OSS"/>
+			<xsd:enumeration value="SZR"/>
+			<xsd:enumeration value="IR"/>
+			<xsd:enumeration value="SKO"/>
+			<xsd:enumeration value="EZP"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="registr_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy registrů ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Obchodní rejstřík, Ministerstvo spravedlnosti - OR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr ekonomických subjektů, Statistický úřad - RES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr živnostenského podnikání,  Ministerstvo hodpodářství - RŽP</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr zdravotnických zařízení - RZZ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr plátců daně z přidané hodnoty - DPH</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr plátců spotřební daně - DS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Středisko cenných papírů - SCP</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Registr centrální evidence úpadčů - CEÚ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="11">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Centrální evidence dotací z rozpočtu - CEDR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="12">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RARIS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="14">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RCNS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="15">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">PSH</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="19">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">NNO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="20">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">OSS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="21">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">EZP</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="typ_registru">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Definice elementu identifikace registru</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="registr_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="soud_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník obchodních soudů pro registraci ekonomických subjektů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Centrální databáze ISOR, Česká republika</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Městský soud v Praze</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Českých Budějovicích</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Plzni</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Ústí nad Labem</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Hradci Králové</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Brně</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Krajský soud v Ostravě</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="soud">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník obchodních soudů pro registraci</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="soud_kod"/>
+			<xsd:element name="T" type="text_soud" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="text_soud" id="AA0938">
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="19"/>
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="zmena_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy typů změn v OR</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Prvozápis ekonomického subjektu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Změna zápisu (s usnesením nebo protokolem)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Oprava zápisu (bez usnesení nebo protokolu)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Výmaz ekonomického subjektu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Převzetí postupovaného spisu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Fyzické zrušení záznamu o ekonomickém subjektu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Změna příslušnosti k RS - otevření vložky na novém RS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Změna příslušnosti k RS - uzavření vložky na původním RS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Přepis údajů o ekonomickém subjektu - zahájení</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Přepis údajů o ekonomickém subjektu - ukončení</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="10">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Zrušení nabídky spisu novému RS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="11">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Vrácení nabízeného spisu původnímu RS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="12">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Oprava údajů o ekonomickém subjektu - zahájení</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="13">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Oprava údajů o ekonomickém subjektu - ukončení</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="14">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Oprava zápisu bez usnesení a protokolu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="98">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Dávkový převod oddílu SZN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="99">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Počáteční plnění databáze</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="typ_zmeny">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník typů změn v OR</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="zmena_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="KVZ_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy stavů pro atributy KKZ, VY, ZAM, LI</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">není a nebyl</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">poslední nastal(-a) před více než rokem od této aktualizace</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">poslední nastal(-a) před méně než rokem a více než půlrokem od této aktualizace</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">poslední nastal(-a) před méně než půlrokem od této aktualizace</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">poslední nastal(-a) právě při této aktualizaci</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="stav_KVZ">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník stavů pro atributy KKZ, VY, ZAM, LI</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="KVZ_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="spis">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Spis obchodního soudu, který provedl registraci subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="vystup_format">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Výstupní formát dokumentu, vraceného z příslušného registru</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="XML"/>
+			<xsd:enumeration value="HTML"/>
+			<xsd:enumeration value="XHTML"/>
+			<xsd:enumeration value="TEXT"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="xslt_ks">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Definice, kde se budou dělat transformace z xml, zda na počítači klienta nebo na serveru</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="klient"/>
+			<xsd:enumeration value="server"/>
+			<xsd:enumeration value="savexml"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ares_vyber_typ">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ požadovaného výběru z ARES, význam:
+FREE  -  hledá se  dle IČO,  nenajde-li se, hledá se dle rodného čísla (RC), nenajde-li se, hledá se dle názvu obchodní firmy (OF). 
+ICO, RC, OF  -  při zadání konkrétního typu se provede výběr za něj, nenalezne-li se, končí se.
+Kterým údajem bylo vyhledáno se objeví v odpovědi v elementu  (Vyhledano_dle) , v elementu (K_shody_*) bude úroveň shody vůči zadaným klíčovým položkám.
+      </xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="FREE"/>
+			<xsd:enumeration value="ICO"/>
+			<xsd:enumeration value="RC"/>
+			<xsd:enumeration value="OF"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ares_dotaz_typ">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ dotazu na registr ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Standard" id="detail_Standard_z_jadra_ARES"/>
+			<xsd:enumeration value="Seznam_Reg" id="seznam_registraci"/>
+			<xsd:enumeration value="Vypis_OR" id="vypis_z_obchodniho_rejstriku"/>
+			<xsd:enumeration value="Vypis_RZP" id="vypis_z_restriku_zivnostenskeho_podnikani"/>
+			<xsd:enumeration value="Vypis_RES" id="vypis_z_registru_ek_osob_CSU"/>
+			<xsd:enumeration value="Vypis_RZZ" id="vypis_z_registru_zdravotnickych_zarizeni"/>
+			<xsd:enumeration value="Basic" id="zakladni_vypis_z_jadra_ARES"/>
+			<xsd:enumeration value="Vypis_CNS" id="vypis_z_registru_cirkvi"/>
+			<xsd:enumeration value="Vypis_OSS" id="obcanska_sdruzeni_a_spolky"/>
+			<xsd:enumeration value="Stdadr" id="standardizace_adresy"/>
+			<xsd:enumeration value="zl" id="prehled_zivnostenskych_listu_ds"/>
+			<xsd:enumeration value="es" id="prehled_ek_subjektu"/>
+			<xsd:enumeration value="su" id="soudni_usneseni_ds"/>
+			<xsd:enumeration value="fo" id="fyzicke_osoby"/>
+			<xsd:enumeration value="ceu" id="centralni_evidence_upadcu"/>
+			<xsd:enumeration value="zm" id="informace_o_zmenach_v_jadre_ARES"/>
+			<xsd:enumeration value="szr" id="spolecny_zemedelsky_registr"/>
+			<xsd:enumeration value="Vypis_OFF" id="off_line_dotazy_na_ARES"/>
+			<xsd:enumeration value="Vypis_PSH" id="polit_strany_a_hnuti"/>
+			<xsd:enumeration value="Vypis_IR" id="insolvencni_rejstrik"/>
+			<xsd:enumeration value="Vypis_SKO" id="registr_skol"/>
+			
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pocet_zaznamu">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Počet vracených záznamů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:minInclusive value="-1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="shoda_ICO_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy shody IČO</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">IČO obsahuje nepovolený znak, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">IČO nezadáno v dotazu ani v ARES, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">IČO nezadáno v dotazu, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">IČO nezadáno v ARES, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda - porovnávaná IČO se liší ve  více než čtyřech číslicích</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda - porovnávaná IČO se liší ve čtyřech číslicích</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda - porovnávaná IČO se liší ve třech číslicích</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda - porovnávaná IČO se liší ve dvou číslicích</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda - porovnávaná IČO se liší v jedné číslici</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">úplná shoda</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="shoda_ICO">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník kódů shody IČO</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="shoda_ICO_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="shoda_RC_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy shody RČ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RČ obsahuje nepovolený znak, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RČ nezadáno v dotazu ani v ARES, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RČ nezadáno v dotazu, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">RČ nezadáno v ARES, kontrola neprovedena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda v datumové části i v koncovce (a může být i v pohlaví a kontr. číslici)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda v datumové části (a může být i v pohlaví a kontr. číslici); shoduje se pouze koncovka, první část vykazuje jakýkoliv rozdíl</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda v koncovce (a může být i v pohlaví a kontr. číslici); shoduje se pouze prvních šest znaků, v koncovce je jakýkoliv rozdíl</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda v pohlaví (a může být i v kontrolní číslici); 3 a 4 znak musí tvořit číslo (01-12, 51-62), po přičtení nebo odečtení hodnoty 50 k číslu, které tvoří 3 a 4 znak jednoho z nich  je shodných alespoň prvních 9 znaků</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">neshoda pouze v kontrolní číslici; prvních devět číslic se shoduje</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">úplná shoda</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="shoda_RC">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník kódů shody IČO</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="shoda_RC_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="shoda_OF_kod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kódy shody OF</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">kontrola shody neprováděna (zatím neopodstatněný únikový kód)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">obchodní firma ani v dotazu ani v ARES není vyplněna</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">obchodní firma v dotazu nevyplněna</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">obchodní firma v ARES nevyplněna</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">totální neshoda, tj. větší pravděpodobnost, že se jedná o různá jména</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">vzdálená podoba, tj. s určitou pravděpodobností může jít o různým způsobem zapsaná stejná jména</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">podoba, tj. větší pravděpodobnost, že se jedná o stejná obchodní jména různě zapsaná</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">shoda po přehození slov a úpravách dle 8</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">shoda po úpravách - převod na velká písmena, odstranění české diakritiky</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">úplná shoda</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="shoda_OF">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číselník kódů shody OF</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="shoda_OF_kod"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="adresa_ARES">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Definice elementu návratové adresy ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="IDA" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="KS" type="U:kod_statu" minOccurs="0"/>
+			<xsd:element name="NS" type="U:nazev_statu" minOccurs="0"/>
+			<xsd:element name="NOK" type="U:nazev_okresu" minOccurs="0"/>
+			<xsd:element name="N" type="U:nazev_obce" minOccurs="0"/>
+			<xsd:element name="NCO" type="U:nazev_casti_obce" minOccurs="0"/>
+			<xsd:element name="NMC" type="U:nazev_mestske_casti" minOccurs="0"/>
+			<xsd:element name="NU" type="U:nazev_ulice" minOccurs="0"/>
+			<xsd:element name="CD" type="U:cis_dom" id="rzp1_ne_OR" minOccurs="0"/>
+			<xsd:element name="TCD" type="U:typ_cis_dom" id="rzp2_ne_OR" minOccurs="0"/>
+			<xsd:element name="CO" type="U:cis_or_sp" minOccurs="0"/>
+			<xsd:element name="CA" type="cislo_do_adresy" minOccurs="0"/>
+			<xsd:element name="PSC" type="U:psc" minOccurs="0"/>
+			<xsd:element name="Zahr_PSC" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="AT" type="adresa_textem" minOccurs="0"/>
+			<xsd:element name="AU" type="U:adresa_UIR" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+		<xsd:attribute name="zdroj" type="zdroj_type"/>
+	</xsd:complexType>
+	<xsd:simpleType name="kod_vyhledani">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kód nalezení IČO pro seznam registrů a výpis z OR</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">záznam nalezen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">záznam nenalezen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">záznam nenalezen, ale pro zadané (DV) existuje záznam</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="vysledek_hledani">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Definice elementu výsledku  hledání IČO pro seznam registrů a výpis z OR</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="kod_vyhledani"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="castka_text">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Peněžní částka textem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="castka">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:minInclusive value="1.00"/>
+			<xsd:maxInclusive value="1000000000000.00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="mena">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Kč"/>
+			<xsd:enumeration value="USD"/>
+			<xsd:enumeration value="DM"/>
+			<xsd:enumeration value="GBP"/>
+			<xsd:enumeration value="SK"/>
+			<xsd:enumeration value="EUR"/>
+			<xsd:enumeration value="EURO"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="penezni_suma">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Libovolná peněžní částka</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Castka" type="castka"/>
+			<xsd:element name="Mena" type="mena"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="fyzicka_osoba">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Údaje fyzické osoby v OR</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="TP" type="U:titul_pred" minOccurs="0"/>
+			<xsd:element name="J" type="U:jmeno" minOccurs="0"/>
+			<xsd:element name="P" type="U:prijmeni" minOccurs="0"/>
+			<xsd:element name="TZ" type="U:titul_za" minOccurs="0"/>
+			<xsd:element name="DN" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="RC" type="U:rodne_cislo" minOccurs="0"/>
+			<xsd:element name="OT" type="osoba_textem" minOccurs="0"/>
+			<xsd:element name="B" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="pravnicka_osoba">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Údaje angažované pravnické osoby v ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="IZO" type="izo" id="identifikator_zahranicni_osoby" minOccurs="0"/>
+			<xsd:element name="OF" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="NPF" type="U:nazev_pravni_formy" minOccurs="0"/>
+			<xsd:element name="SI" type="adresa_ARES" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:simpleType name="izo">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="error_kod_ARES">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Základ seznamu chybových kódů dotazů pro ARES
+	naplnení elementu (Fault)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:byte">
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Na zadaný Dotaz by se vrátilo více odpovědí, než odpovídá parametru max_pocet. Případně bližší popis chyby je uveden v dalším textu chybové hlášky.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">dokument neodpovídá schématu (non valid dokument)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">syntaktická chyba dokumentu (non well-formed dokument)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">chyba na straně poskytující aplikace (nepřístupná databáze, jiná chyba zpracování)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">status věty neuveden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">chyba SQL dotazu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">chyba logických vazeb vstupních dat v dotazu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">nekonzistence dat v databázi</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Nepodporovaná verze dotazu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="10">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Záznam je u Obchodního rejstříku přepisován. Nebude vystavováno.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="11">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">Požadovaná služba není veřejně přístupná.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="99">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">ostatní chyby</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="error_ARES">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Definice elementu obecné chyby dotazu v ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="EK" type="error_kod_ARES"/>
+			<xsd:element name="ET" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="status_vety_ares">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kód statutu věty v databázi ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="A">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">aktuálně platný záznam u ekonomického subjektu</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Z">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">ekonomický subjekt u daného záznamu je zaniklý</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="N">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="cs">status věty neuveden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="chyba">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Informace o chybě včetně krátké nápovědy</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="xsd:string"/>
+			<xsd:element name="Popis" type="U:popis"/>
+			<xsd:element name="Napoveda" type="U:popis"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ano_ne">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Příznak pro odpověď s možností Ano / Ne</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="A"/>
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="okec">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">OKEČ - odvětvová klasifikace ekonomických činností (slouží pro dvě různá volání - 1. seznam okečů bez názvu, 2. jeden okeč s názvem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="OKEC" type="kod_okec" maxOccurs="unbounded"/>
+			<xsd:element name="NO" type="nazev_okec" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="kod_okec">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">OKEČ - Odvětvová klasifikace ekonomických činností (ČS. verze NACE na 6 znaků,  CIS_5501_CS)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="kod_okecSimpleType">
+				<xsd:attribute name="dod" type="xsd:date"/>
+				<xsd:attribute name="ddo" type="xsd:date"/>
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="kod_okecSimpleType" id="AA0029">
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="2"/>
+			<xsd:maxLength value="7"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nazev_okec">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Název OKEČ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="240"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="odpoved_basic">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="VBAS" type="vypis_basic" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_basic">
+		<xsd:sequence>
+			<xsd:element name="ICO" type="ico"/>
+			<xsd:element name="DIC" type="dic" minOccurs="0"/>
+			<xsd:element name="OF" type="obchodni_firma"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="PF" type="pravni_forma" minOccurs="0"/>
+			<xsd:element name="Doplnujici_PF" type="doplnujici_pravni_formy" minOccurs="0"/>
+			<xsd:element name="AD" type="adresa_dorucovaci" minOccurs="0"/>
+			<xsd:element name="AA" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="Adr_puv" type="adresa_ARES" id="rijen_2010" minOccurs="0"/>
+			<xsd:element name="PSU" type="priznaky_subjektu" minOccurs="0"/>
+			<xsd:element name="ROR" type="registrace" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="RRZ" type="registrace_RZP" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SCEU" type="stav_subjektu_ceu" minOccurs="0"/>
+			<xsd:element name="KPP" type="kategorie_poctu_pracovniku" minOccurs="0"/>
+			<xsd:element name="OKECE" type="okec" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Nace" type="nace" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PPI" type="predmety_podnikani" minOccurs="0"/>
+			<xsd:element name="Obory_cinnosti" type="obory_cinnosti" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="obory_cinnosti">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o oborech činnosti u živnosti či provozovny</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Obor_cinnosti" type="obor_cinnosti" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="obor_cinnosti">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Obor činnosti (od 1.7.2008)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K" type="kod_oboru" minOccurs="0"/>
+			<xsd:element name="T" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="aktivni" type="ano_ne"/>
+	</xsd:complexType>
+	<xsd:complexType name="adresa_dorucovaci">
+		<xsd:sequence>
+			<xsd:element name="UC" type="ulice_cislo" minOccurs="0"/>
+			<xsd:element name="PB" type="psc_obec" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="zdroj" type="zdroj_type"/>
+	</xsd:complexType>
+	<xsd:simpleType name="priznaky_subjektu">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Interní příznaky subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ulice_cislo">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">1. řádek z doručovací adresy - ulice (48 znaků) + číslo (4 číslice)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="53"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="psc_obec">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">2. řádek z doručovací adresy - PSČ (5 znaků) + obec (48 znaků)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="54"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="stav_subjektu_ceu">
+		<xsd:annotation>
+			<xsd:documentation>z Hlavní tabulky úpadců - slouží zejména pro rozlišení, o jakého úpadce se jedná</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="SKO" type="stav_upadce_CEU"/>
+			<xsd:element name="SVY" type="stav_upadce_CEU"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="stav_upadce_CEU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Abych nemusel importovat schéma CEU: S údadce vzhledem k vyrovnání: "A"=aktivní, "Z"=zrušený, "N"= není vůbec (tab. k_upadce)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="A"/>
+			<xsd:enumeration value="Z"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="kategorie_poctu_pracovniku">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kat. počtu prac. (RES)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="institucionarni_sektor">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Institucionární sektor (RES)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="stav">
+		<xsd:annotation>
+			<xsd:documentation>S subjektu: Aktivní / Zaniklý a atributy KKZ, VY, ZAM, LI</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="SSU" type="stav_subjektu" id="pro_usn_6_2004" minOccurs="0"/>
+			<xsd:element name="KKZ" type="stav_KVZ"/>
+			<xsd:element name="VY" type="stav_KVZ"/>
+			<xsd:element name="ZAM" type="stav_KVZ"/>
+			<xsd:element name="LI" type="stav_KVZ"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="stav_subjektu">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Aktivní"/>
+			<xsd:enumeration value="Zaniklý"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="registrace">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o registraci subjektu u soudů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="SZ" type="spisova_znacka" maxOccurs="unbounded"/>
+			<xsd:element name="SOR" type="stav" id="pro_Basic_01_2009" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spisova_znacka">
+		<xsd:annotation>
+			<xsd:documentation>Spisová značka, pod kterou je veden spis subjektu u daného soudu. (Bývá zapisována oddíl / vložka.)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="SD" type="soud"/>
+			<xsd:element name="OV" type="U:popis"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+		<xsd:attribute name="zdroj" type="zdroj_type"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="cinnosti">
+		<xsd:annotation>
+			<xsd:documentation>Specifikace činností všech typů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PP" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="DKC" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PC" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PCI" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="UN" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="UNF" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="predmety_podnikani">
+		<xsd:annotation>
+			<xsd:documentation>...pro volání z basic</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PP" type="texty" id="AA0942" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="texty">
+		<xsd:annotation>
+			<xsd:documentation>TY předmětů podnikání, ostat.skutečnosti atd. s atributy</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="T" type="textType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+		<xsd:attribute name="zdroj" type="zdroj_type"/>
+		
+	</xsd:complexType>
+	<xsd:complexType name="textType">
+		<xsd:simpleContent>
+			<xsd:extension base="U:text">
+				<xsd:attribute name="dod" type="xsd:date"/>
+				<xsd:attribute name="ddo" type="xsd:date"/>
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="ico">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">IČO organizace nebo fyzické osoby s atributem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="icoSimpleType">
+				<xsd:attribute name="dod" type="xsd:date"/>
+				<xsd:attribute name="ddo" type="xsd:date"/>
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="icoSimpleType">
+		<xsd:restriction base="U:ico"/>
+	</xsd:simpleType>
+	<xsd:complexType name="obchodni_firma">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Obchodní firma s atributem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="obchodni_firmaSimpleType">
+				<xsd:attribute name="dod" type="xsd:date"/>
+				<xsd:attribute name="ddo" type="xsd:date"/>
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="obchodni_firmaSimpleType">
+		<xsd:restriction base="U:obchodni_firma"/>
+	</xsd:simpleType>
+	<xsd:complexType name="cizi_nazev">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Jeden cizí název obchodní firmy</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Nazev" type="U:obchodni_firma"/>
+			<xsd:element name="Jazyk" type="xsd:string"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="dic">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">DIČ organizace nebo fyzické osoby -  CZ + identifikační číslo organizace /před 1.5.2004 se skládalo z kódu finančního úřadu (3 číslice) - kódu plátce daně (IČO nebo RČ), pomlčka není v UVISu definována, ale bývá součástí./</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="dicSimpleType">
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="dicSimpleType">
+		<xsd:restriction base="U:dic"/>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="odpoved_RZP">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_RZP" type="vypis_RZP" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_RZP">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z rejstříku živnostenského podnikání v ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="ZAU" type="zakladni_udaje_RZP"/>
+			<xsd:element name="REG" type="registrace_RZP" minOccurs="0"/>
+			<xsd:element name="PZI" type="xsd:integer" minOccurs="0"/>
+			<xsd:element name="ZI" type="zivnosti_RZP" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="zakladni_udaje_RZP">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační a alokační údaje ekonomického subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="S" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="ZIC" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="OF" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="PFR" type="pravni_forma_RZP" minOccurs="0"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="SI" type="adresa_ARES" minOccurs="0"/>
+				</xsd:sequence>
+				<xsd:sequence>
+					<xsd:element name="MP" type="adresa_ARES" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:choice>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="registrace_RZP">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o registraci subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZU" type="zivnostensky_urad" minOccurs="0"/>
+			<xsd:element name="VJ" type="ano_ne" minOccurs="0"/>
+			<xsd:element name="OR" type="ano_ne" minOccurs="0"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="aktivni" type="ano_ne"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="zivnosti_RZP">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o všech živnostech subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PZI" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="Z" type="zivnost" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zivnost">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o jedné živnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PP" type="texty" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	
+	<xsd:complexType name="pravni_forma_RZP">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Právní forma včetně popisných položek</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KPF" type="U:kod_pravni_formy"/>
+			<xsd:element name="NPF" type="U:nazev_pravni_formy" minOccurs="0"/>
+			<xsd:element name="ZPF" type="zkraceny_nazev_PF" minOccurs="0"/>
+			<xsd:element name="PFO" type="pf_osoba" minOccurs="0"/>
+			<xsd:element name="TZU" type="tzu_osoba" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	
+	<xsd:complexType name="zivnostensky_urad">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Živnostenský úřad (vz_ciurady)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KZU" type="xsd:int"/>
+			<xsd:element name="NZU" type="nazev_ZU"/>
+			<xsd:element name="N" type="U:nazev_obce" minOccurs="0"/>
+			<xsd:element name="NU" type="U:nazev_ulice" minOccurs="0"/>
+			<xsd:element name="PSC" type="U:psc" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="financni_urad">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Finanční úřad (vz_podnik.k_fu)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KFU" type="xsd:short"/>
+			<xsd:element name="NFU" type="nazev_FU"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="zkraceny_nazev_PF">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Zkrácený název právní formy</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="23"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pf_osoba">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ ekonomického subjektu, P=právnická osoba, F=fyzická, Z=obojaká (OR 6.01)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="P"/>
+			<xsd:enumeration value="F"/>
+			<xsd:enumeration value="Z"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nazev_ZU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Název živnostenského úřadu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nazev_FU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Název finančního úřadu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="33"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="cislo_jednaci">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Číslo jednací (v dokumentu , na ŽÚ)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="stadrs">
+		<xsd:annotation>
+			<xsd:documentation>Standardizace adres pro rejstříkové soudy opíše došlý dotaz a přidá k němu nalezenou odpověď</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Stadrs_dotaz" type="stadrs_dotaz"/>
+			<xsd:element name="Stadrs_odpoved" type="stadrs_odpoved"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="stadrs_dotaz">
+		<xsd:annotation>
+			<xsd:documentation>Opíše došlý dotaz, příp. doplní implicitní hodnoty místo nezadaných a přidá k němu nalezenou odpověď</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KS" type="U:kod_statu" minOccurs="0"/>
+			<xsd:element name="KOK" type="U:kod_okresu" minOccurs="0"/>
+			<xsd:element name="N" type="U:nazev_obce" minOccurs="0"/>
+			<xsd:element name="NCO" type="U:nazev_casti_obce" minOccurs="0"/>
+			<xsd:element name="NU" type="U:nazev_ulice" minOccurs="0"/>
+			<xsd:element name="CA" type="cislo_do_adresy" minOccurs="0"/>
+			<xsd:element name="PSC" type="U:psc" minOccurs="0"/>
+			<xsd:element name="AT" type="adresa_textem" minOccurs="0"/>
+			<xsd:element name="Diakritika" type="xsd:boolean" default="true"/>
+			<xsd:element name="K_diakritiky" type="kod_diakritiky" default="ISO"/>
+			<xsd:element name="Max_pocet" type="xsd:short" default="20"/>
+			<xsd:element name="Preteceni" type="preteceni" default="N"/>
+			<xsd:element name="Redukce_slov" type="ano_ne" default="A"/>
+			<xsd:element name="Format_odpovedi" type="vystup_format" default="XML"/>
+			<xsd:element name="Chyba" type="chyba" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="stadrs_odpoved">
+		<xsd:sequence>
+			<xsd:element name="Vsechna_slova" type="vysledek_dotazu"/>
+			<xsd:element name="Po_redukci_slov" type="vysledek_dotazu" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vysledek_dotazu">
+		<xsd:sequence>
+			<xsd:element name="Pocet_nalezenych" type="xsd:int"/>
+			<xsd:element name="Chyba" type="chyba" minOccurs="0"/>
+			<xsd:element name="Pocet_nenalezenych" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="Seznam_nenalezenych" type="slovo" minOccurs="0"/>
+			<xsd:element name="Pocet_navracenych" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="Seznam_navracenych" type="seznam_navracenych" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="seznam_navracenych">
+		<xsd:sequence>
+			<xsd:element name="AU_s_nazvy" type="adresa_UIR_s_nazvy" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="adresa_UIR_s_nazvy">
+		<xsd:sequence>
+			<xsd:element name="KK" type="kod_kraje" minOccurs="0"/>
+			<xsd:element name="Nazev_kraje" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="CZNUTS" type="cznuts" minOccurs="0"/>
+			<xsd:element name="KOK" type="U:kod_okresu" minOccurs="0"/>
+			<xsd:element name="NOK" type="U:nazev_okresu" minOccurs="0"/>
+			<xsd:element name="KO" type="U:kod_obce" minOccurs="0"/>
+			<xsd:element name="N" type="U:nazev_obce" minOccurs="0"/>
+			<xsd:element name="KPO" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="Nazev_prazskeho_obvodu" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="KMC" type="U:kod_mestske_casti" minOccurs="0"/>
+			<xsd:element name="NMC" type="U:nazev_mestske_casti" minOccurs="0"/>
+			<xsd:element name="KCO" type="U:kod_casti_obce" minOccurs="0"/>
+			<xsd:element name="NCO" type="U:nazev_casti_obce" minOccurs="0"/>
+			<xsd:element name="KUL" type="U:kod_ulice" minOccurs="0"/>
+			<xsd:element name="NU" type="U:nazev_ulice" minOccurs="0"/>
+			<xsd:element name="CD" type="U:cis_dom" minOccurs="0"/>
+			<xsd:element name="TCD" type="U:typ_cis_dom" minOccurs="0"/>
+			<xsd:element name="CO" type="U:cis_or" minOccurs="0"/>
+			<xsd:element name="PCO" type="U:pism_cislo_orientacni" minOccurs="0"/>
+			<xsd:element name="PSC" type="U:psc" minOccurs="0"/>
+			<xsd:element name="KOB" type="U:kod_objektu" minOccurs="0"/>
+			<xsd:element name="KA" type="U:kod_adresy" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="kod_diakritiky">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Způsob kódování českých znaků</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ISO"/>
+			<xsd:enumeration value="WIN"/>
+			<xsd:enumeration value="LAT"/>
+			<xsd:enumeration value="UTF"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="preteceni">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Jak se zachová v případě překročení maximálního počtu navracených vět ( N = nevracet nic, P = prvních max. vět</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="P"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="slovo">
+		<xsd:sequence>
+			<xsd:element name="Slovo" type="xsd:string" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="kod_kraje">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">
+Číslo kraje dle číselníku v databázi:
+ 19  Hlavní město Praha
+ 27  Středočeský kraj
+ 35  Jihočeský kraj
+ 43  Plzeňský kraj
+ 51  Karlovarský kraj
+ 60  Ústecký kraj
+ 78  Liberecký kraj
+ 86  Královéhradecký kraj
+ 94  Pardubický kraj
+108  Vysočina
+116  Jihomoravský kraj
+124  Olomoucký kraj
+132  Moravskoslezský kraj
+141  Zlínský kraj
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:short">
+			<xsd:enumeration value="19"/>
+			<xsd:enumeration value="27"/>
+			<xsd:enumeration value="35"/>
+			<xsd:enumeration value="43"/>
+			<xsd:enumeration value="51"/>
+			<xsd:enumeration value="60"/>
+			<xsd:enumeration value="78"/>
+			<xsd:enumeration value="86"/>
+			<xsd:enumeration value="94"/>
+			<xsd:enumeration value="108"/>
+			<xsd:enumeration value="116"/>
+			<xsd:enumeration value="124"/>
+			<xsd:enumeration value="132"/>
+			<xsd:enumeration value="141"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="cznuts" id="AA0179">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Klasifikace územních statistických jednotek - CZ-NUTS - okresy  (http://www.czso.cz:8100/metis_ps/owa/TUCCIS   Číselník: CIS_0090_CS)
+</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="6"/>
+			<xsd:minLength value="6"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="vypis_RFO">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z registru finančních organizací v ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Kraj" type="kraj_RFO" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="kraj_RFO">
+		<xsd:sequence>
+			<xsd:element name="KK" type="kod_kraje"/>
+			<xsd:element name="Nazev" type="xsd:string"/>
+			<xsd:element name="Okres" type="okres_RFO" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="okres_RFO">
+		<xsd:sequence>
+			<xsd:element name="KOK" type="U:kod_okresu"/>
+			<xsd:element name="Nazev" type="U:nazev_okresu"/>
+			<xsd:element name="Obec" type="obec_RFO" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="obec_RFO">
+		<xsd:sequence>
+			<xsd:element name="KO" type="U:kod_obce"/>
+			<xsd:element name="Nazev" type="U:nazev_obce"/>
+			<xsd:choice>
+				<xsd:element name="Prazsky_obvod" type="prazsky_obvod_RFO" maxOccurs="unbounded"/>
+				<xsd:element name="Mestska_cast" type="mestska_cast_RFO" maxOccurs="unbounded"/>
+				<xsd:element name="Cast_obce" type="cast_obce_RFO" maxOccurs="unbounded"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="prazsky_obvod_RFO">
+		<xsd:sequence>
+			<xsd:element name="KPO" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="Nazev" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Mestska_cast" type="mestska_cast_RFO" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="mestska_cast_RFO">
+		<xsd:sequence>
+			<xsd:element name="KMC" type="U:kod_mestske_casti" minOccurs="0"/>
+			<xsd:element name="Nazev" type="U:nazev_mestske_casti" minOccurs="0"/>
+			<xsd:element name="Cast_obce" type="cast_obce_RFO" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="cast_obce_RFO">
+		<xsd:sequence>
+			<xsd:element name="KCO" type="U:kod_casti_obce" minOccurs="0"/>
+			<xsd:element name="Nazev" type="U:nazev_casti_obce" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="odpoved_CEU">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_CEU" type="vypis_ceu" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_ceu">
+		<xsd:annotation>
+			<xsd:documentation>Výpis informací o úpadci z Centrální evidence úpadců dle ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod"/>
+			<xsd:element name="Subjekt" type="subjekt_CEU" maxOccurs="unbounded"/>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="subjekt_CEU">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o subjektu v databázi ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="MSp" type="msp"/>
+			<xsd:element name="ACEU" type="aceu"/>
+			<xsd:element name="K_zruseno" type="k_zruseno" minOccurs="0"/>
+			<xsd:element name="K_chyba" type="k_chyba" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="msp">
+		<xsd:annotation>
+			<xsd:documentation>Data dodaná z Ministerstva spravedlnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Vk_podnet" type="vk_podnet"/>
+			<xsd:element name="Vk_adresa" type="vk_adresa" maxOccurs="2"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="aceu">
+		<xsd:annotation>
+			<xsd:documentation>Data upravená dle ARES (tabulka k_podnet)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K_konkurz" type="k_konkurz"/>
+			<xsd:element name="Poradi" type="xsd:short"/>
+			<xsd:element name="DV_podnetu" type="xsd:date"/>
+			<xsd:element name="K_ukonu_podnetu" type="kod_ukonu_podnetu"/>
+			<xsd:element name="Priznak_usneseni" type="ano_ne"/>
+			<xsd:element name="Radky_textu_usneseni" type="radky_textu_usneseni" minOccurs="0"/>
+			<xsd:element name="J_souboru_s_usnesenim" type="U:popis" minOccurs="0"/>
+			<xsd:element name="Spravce_konkurzu" type="spravce_konkurzu_CEU" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Priznaky" type="priznaky_CEU"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_zruseno">
+		<xsd:annotation>
+			<xsd:documentation>Data o fyzicky zrušených větách</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="O_podnetu" type="xsd:int"/>
+			<xsd:element name="O_podn_zrus" type="xsd:int"/>
+			<xsd:element name="O_upadce" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_chyba">
+		<xsd:annotation>
+			<xsd:documentation>Chyby zjištěné při zpracování</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Cislo_chyby" type="xsd:int"/>
+			<xsd:element name="Nazev_chyby" type="U:popis"/>
+			<xsd:element name="Popis_chyby" type="U:popis"/>
+			<xsd:element name="Zavaznost" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="vk_podnet">
+		<xsd:annotation>
+			<xsd:documentation>Vstupní tabulka s nahranými daty z Ministerstva spravedlnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="S_podnetu" type="xsd:int"/>
+			<xsd:element name="Cislo_vety_ceu" type="xsd:int"/>
+			<xsd:element name="Stornuj" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="DV" type="xsd:date"/>
+			<xsd:element name="Cislo_soudu" type="xsd:short"/>
+			<xsd:element name="K_ukonu" type="xsd:short"/>
+			<xsd:element name="Cislo_senatu" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="Cislo_znacky" type="xsd:short"/>
+			<xsd:element name="Rok_znacky" type="xsd:short"/>
+			<xsd:element name="KKZ_vyrovnani" type="konkurz_vyrovnani_CEU"/>
+			<xsd:element name="PFO" type="pfc"/>
+			<xsd:element name="Cele_jmeno" type="U:popis" minOccurs="0"/>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="RC" type="U:rodne_cislo" minOccurs="0"/>
+			<xsd:element name="URL_detail" type="url_CEU"/>
+			<xsd:element name="URL_usneseni" type="url_CEU" minOccurs="0"/>
+			<xsd:element name="Spravce_konkurzni_podstaty" type="U:popis" minOccurs="0"/>
+			<xsd:element name="S_vety" type="stav_vety_CEU"/>
+			
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vk_adresa">
+		<xsd:annotation>
+			<xsd:documentation>Adresy z Ministerstva spravedlnosti ve vazbě na tabulku vk_podnet</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Upadce_spravce" type="upadce_spravce_CEU"/>
+			<xsd:element name="K_typu_adresy" type="xsd:short"/>
+			<xsd:element name="NOK" type="U:nazev_okresu" minOccurs="0"/>
+			<xsd:element name="N" type="U:nazev_obce" minOccurs="0"/>
+			<xsd:element name="NU" type="U:nazev_ulice" minOccurs="0"/>
+			<xsd:element name="CA" type="cislo_do_adresy" minOccurs="0"/>
+			<xsd:element name="PSC" type="U:psc" minOccurs="0"/>
+			<xsd:element name="AA" type="adresa_ARES" minOccurs="0"/>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="k_konkurz">
+		<xsd:annotation>
+			<xsd:documentation>Základní údaje o konkurzu z Centrální evidence úpadců  (tab. k_konkurz a dále)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="K_klic" type="k_klic"/>
+			<xsd:element name="K_upadce" type="k_upadce"/>
+			<xsd:element name="Poradi" type="xsd:short"/>
+			<xsd:element name="SKO" type="stav_konkurzu_CEU"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_klic">
+		<xsd:annotation>
+			<xsd:documentation>Tabulka pro uložení logických klíčů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Cislo_soudu" type="xsd:short"/>
+			<xsd:element name="Cislo_senatu" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="Cislo_znacky" type="xsd:short"/>
+			<xsd:element name="Rok_znacky" type="xsd:short"/>
+			<xsd:element name="KKZ_vyrovnani" type="konkurz_vyrovnani_CEU"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_upadce">
+		<xsd:annotation>
+			<xsd:documentation>Hlavní tabulka úpadců - slouží zejména pro rozlišení, o jakého úpadce se jedná</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="S_upadce" type="xsd:int"/>
+			<xsd:element name="PFC" type="pfc"/>
+			<xsd:element name="K_eksubj" type="k_eksubj" minOccurs="0"/>
+			<xsd:element name="K_cosoba" type="k_cosoba" minOccurs="0"/>
+			<xsd:element name="SKO" type="stav_upadce_CEU"/>
+			<xsd:element name="SVY" type="stav_upadce_CEU"/>
+			
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_eksubj">
+		<xsd:annotation>
+			<xsd:documentation>Základní údaje o ekonomickém subjektu resp. fyzické osobě z CEU, vyčištěné, upravené.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PFO" type="pfc"/>
+			<xsd:element name="Cele_jmeno" type="U:popis"/>
+			<xsd:element name="ICO" type="U:ico"/>
+			<xsd:element name="A_sidla" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="K_cosoba" type="k_cosoba" minOccurs="0"/>
+			<xsd:element name="Ares" type="ano_ne"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="k_cosoba">
+		<xsd:annotation>
+			<xsd:documentation>Osoby ve smyslu civilních individuí</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Podnika" type="ano_ne"/>
+			<xsd:element name="Cele_jmeno" type="U:popis" minOccurs="0"/>
+			<xsd:element name="RC" type="U:rodne_cislo"/>
+			<xsd:element name="Rozliseni_rodneho_cisla" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="A_sidla" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="Ares" type="ano_ne"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="upadce_spravce_CEU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Příznak úpadce "U" nebo správce konkurzu  "S"</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="U"/>
+			<xsd:enumeration value="S"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="konkurz_vyrovnani_CEU">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="K"/>
+			<xsd:enumeration value="V"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pfc">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ ekonomického subjektu (P=právnická osoba, F=fyzická osoba) společně navíc s typem úpadce (C=civilní osoba - nepodnikající)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="P"/>
+			<xsd:enumeration value="F"/>
+			<xsd:enumeration value="C"/>
+		</xsd:restriction>
+		
+	</xsd:simpleType>
+	<xsd:simpleType name="stav_vety_CEU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">S věty v tabulce vk_podnet</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="P"/>
+			<xsd:enumeration value="R"/>
+			<xsd:enumeration value="S"/>
+			<xsd:enumeration value="Z"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="url_CEU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Obecný popis URL adresy</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+			<xsd:pattern value="http://www\.justice\.cz/*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="kod_ukonu_podnetu">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">0 = zrušení rozhodnutí, 1 = prohlášení</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:byte">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="radky_textu_usneseni">
+		<xsd:annotation>
+			<xsd:documentation>Řádky textů usnesení k podnětům</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Radek" type="U:text" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spravce_konkurzu_CEU">
+		<xsd:annotation>
+			<xsd:documentation>Správci konkurzu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Cele_jmeno_spravce" type="U:popis"/>
+			<xsd:element name="A_spravce" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="B_spravce" type="adresa_ARES" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="priznaky_CEU">
+		<xsd:annotation>
+			<xsd:documentation>Různé příznaky k podnětu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+			<xsd:minLength value="10"/>
+			<xsd:pattern value="[A,N]{10}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="stav_konkurzu_CEU">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">S konkurzu: "A" aktivní, "Z" zaniklý (tab. k_konkurz)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="A"/>
+			<xsd:enumeration value="Z"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="odpoved_OR">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_OR" type="vypis_OR" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_OR">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z obchodního rejstříku podle ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="ZAU" type="zakladni_udaje_OR"/>
+			<xsd:element name="REG" type="registrace"/>
+			<xsd:element name="CIN" type="cinnosti" minOccurs="0"/>
+			<xsd:element name="EX" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="OSK" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="KAP" type="kapital" minOccurs="0"/>
+			<xsd:element name="SO" type="statutarni_organ" minOccurs="0"/>
+			<xsd:element name="SOS" type="sos" minOccurs="0"/>
+			<xsd:element name="SOK" type="sok" minOccurs="0"/>
+			<xsd:element name="SOP" type="sop" minOccurs="0"/>
+			<xsd:element name="PRE" type="predstavenstvo" minOccurs="0"/>
+			<xsd:element name="SOZ" type="szo" minOccurs="0"/>
+			<xsd:element name="SR" type="spravni_rada" minOccurs="0"/>
+			<xsd:element name="NAD" type="nadace" minOccurs="0"/>
+			<xsd:element name="NF" type="nadacni_fond" minOccurs="0"/>
+			<xsd:element name="LI" type="likvidace" minOccurs="0"/>
+			<xsd:element name="PRO" type="prokura" minOccurs="0"/>
+			<xsd:element name="Reditele_ops" type="reditele_ops" minOccurs="0"/>
+			<xsd:element name="DR" type="dozorci_rada" minOccurs="0"/>
+			<xsd:element name="Kontrolni_komise" type="kontrolni_komise" minOccurs="0"/>
+			<xsd:element name="REI" type="revizori" minOccurs="0"/>
+			<xsd:element name="SBV" type="spolecnici_bez_vkladu" minOccurs="0"/>
+			<xsd:element name="SSV" type="spolecnici_s_vkladem" minOccurs="0"/>
+			<xsd:element name="AKI" type="akcionari" minOccurs="0"/>
+			<xsd:element name="Z_SP" type="zakladatele_SP" minOccurs="0"/>
+			<xsd:element name="Z_OPS" type="zakladatele_OPS" minOccurs="0"/>
+			<xsd:element name="Z_OZ" type="zrizovatele_OZ" minOccurs="0"/>
+			<xsd:element name="Z_PR" type="zrizovatele_PR" minOccurs="0"/>
+			<xsd:element name="NAU" type="nastupci_zrizovatele" minOccurs="0"/>
+			<xsd:element name="Z_N" type="zrizovatele_nadace" minOccurs="0"/>
+			<xsd:element name="VOU" type="ved_oz" minOccurs="0"/>
+			<xsd:element name="KME" type="komanditiste" minOccurs="0"/>
+			<xsd:element name="DCI" type="druzstevnici" minOccurs="0"/>
+			<xsd:element name="KPI" type="komplementari" minOccurs="0"/>
+			<xsd:element name="CLS" type="clenove_sdruzeni" minOccurs="0"/>
+			<xsd:element name="KV" type="konkurzy_vyrovnani" minOccurs="0"/>
+			<xsd:element name="OZY" type="odstepne_zavody" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="angazma">
+		<xsd:annotation>
+			<xsd:documentation>Kombinované angažmá - kombinace údajů  PO a FO, včetně vkladu společníka (v id je slovo vklad)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KAN" type="xsd:short" id="adis_2004_01" minOccurs="0"/>
+			<xsd:element name="F" type="U:popis" id="AA0915" minOccurs="0"/>
+			<xsd:element name="Oznaceni" type="U:popis" id="oznaceni_funkce_za_jmenem_2009_12" minOccurs="0"/>
+			<xsd:element name="PO" type="pravnicka_osoba" minOccurs="0"/>
+			<xsd:element name="FO" type="fyzicka_osoba" minOccurs="0"/>
+			<xsd:element name="CLE" type="trvani" minOccurs="0"/>
+			<xsd:element name="VF" type="trvani" minOccurs="0"/>
+			<xsd:element name="VKS" type="vklad_spolecnika" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="zakladni_udaje_OR">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační a alokační údaje ekonomického subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="POD" type="xsd:date" id="or_1.0.2" minOccurs="0"/>
+			<xsd:element name="LA" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="S" type="stav"/>
+			<xsd:element name="ICO" type="ico" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="OF" type="obchodni_firma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Cizi_nazev" type="cizi_nazev" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PFO" type="pravni_forma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="PFZ" type="pravni_forma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SI" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="MP" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ACR" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="AN" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ANF" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="B" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="UCR" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="A" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FOR" type="fyzicka_osoba" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+			<xsd:element name="DVOR" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZOR" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Fuze" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="UI" type="udalosti" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	
+	<xsd:complexType name="udalosti">
+		<xsd:sequence>
+			<xsd:element name="U" type="udalost" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="udalost">
+		<xsd:sequence>
+			<xsd:element name="POD" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="TDA" type="U:text" minOccurs="0"/>
+			<xsd:element name="TZM" type="typ_zmeny" minOccurs="0"/>
+			<xsd:element name="US" type="xsd:boolean" minOccurs="0"/>
+			<xsd:element name="ID_usneseni" type="xsd:integer" minOccurs="0"/>
+			<xsd:element name="S" type="stav" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	
+	<xsd:complexType name="ostatni_skutecnosti">
+		<xsd:annotation>
+			<xsd:documentation>Další informace k subjektu v textové podobě</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="T" type="U:text" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="vklad_spolecnika">
+		<xsd:annotation>
+			<xsd:documentation>VK a jeho splacení</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="VK" type="vklad" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SPL" type="splaceno" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="TSP" type="texty" minOccurs="0"/>
+			<xsd:element name="ZP" type="texty" minOccurs="0"/>
+			<xsd:element name="OP" type="texty" minOccurs="0"/>
+			<xsd:element name="KOM" type="texty" minOccurs="0"/>
+			<xsd:element name="TUP" type="texty" minOccurs="0"/>
+			<xsd:element name="T" type="texty" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="vklad">
+		<xsd:annotation>
+			<xsd:documentation>Částka vkladu slouží k uložení finančních obnosů v Kč nebo volným textem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KC" type="U:popis" minOccurs="0"/>
+			<xsd:element name="OST" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="splaceno">
+		<xsd:annotation>
+			<xsd:documentation>Informace o splacení částky vkladu v Kč, procentech nebo slovy volným textem</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KC" type="U:popis" minOccurs="0"/>
+			<xsd:element name="PRC" type="U:popis" minOccurs="0"/>
+			<xsd:element name="OST" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="kapital">
+		<xsd:annotation>
+			<xsd:documentation>informace o základním jmění subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZA" type="vklad_spolecnika" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="UK" type="vklad_spolecnika" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="KJ" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="NJ" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ZAP" type="vklad_spolecnika" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="MKJ" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="MV" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ZAV" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="CVK" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SP" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="UOP" type="jmeni" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Akcie" type="akcie" minOccurs="0"/>
+			<xsd:element name="UM" type="texty" id="AA0880" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="NM" type="texty" id="AA0941" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="jmeni">
+		<xsd:annotation>
+			<xsd:documentation>Jmeni z Kapitálu, nové v 1.0.2 (D:T znovu od 26.1.2010)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PIK" type="angazma" id="podilnik_PO_n_FO" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="VK" type="vklad" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SPL" type="splaceno" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="TSP" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ZP" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="OP" type="texty" id="AA0881" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="KOM" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="TUP" type="texty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="U:text" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="akcie">
+		<xsd:sequence>
+			<xsd:element name="EM" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="DA" type="druh_akcie" minOccurs="0"/>
+						<xsd:element name="H" type="hodnota_emise" minOccurs="0"/>
+						<xsd:element name="Pocet" type="pocet_akcii" minOccurs="0"/>
+						<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+						<xsd:element name="PD" type="podoba_akcii" minOccurs="0"/>
+					</xsd:sequence>
+					<xsd:attribute name="dod" type="xsd:date"/>
+					<xsd:attribute name="ddo" type="xsd:date"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="hodnota_emise" id="AA0889">
+		<xsd:annotation>
+			<xsd:documentation>H emise</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="16"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="pocet_akcii" id="AA0961">
+		<xsd:annotation>
+			<xsd:documentation>Počet akcií</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:minInclusive value="1.00"/>
+			<xsd:maxInclusive value="50000000000.00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="podoba_akcii" id="AA0898">
+		<xsd:annotation>
+			<xsd:documentation>PD akcií</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="v listinné podobě"/>
+			<xsd:enumeration value="v zaknihované podobě"/>
+			<xsd:enumeration value="v imobilizované podobě"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="druh_akcie">
+		<xsd:annotation>
+			<xsd:documentation>Výčet možných druhů akcií</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Akcie na jméno"/>
+			<xsd:enumeration value="Akcie na majitele"/>
+			<xsd:enumeration value="Zaměstnanecké akcie na jméno"/>
+			<xsd:enumeration value="Prioritní akcie na majitele"/>
+			<xsd:enumeration value="Prioritní akcie na jméno"/>
+			<xsd:enumeration value="Akcie se zvláštními právy"/>
+			<xsd:enumeration value="Kmenové akcie na jméno"/>
+			<xsd:enumeration value="Kmenové akcie na majitele"/>
+			<xsd:enumeration value="Akcie na doručitele"/>
+			<xsd:enumeration value="Akcie na jméno a majitele"/>
+			<xsd:enumeration value="Akcie na držitele"/>
+			<xsd:enumeration value="Bez uvedení druhu"/>
+			<xsd:enumeration value="Hromadná akcie"/>
+			<xsd:enumeration value="Akcie kusové na jméno"/>
+			<xsd:enumeration value="Akcie kusové na majitele"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="statutarni_organ">
+		<xsd:annotation>
+			<xsd:documentation>Statutární orgán</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CSO" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" id="AA0958" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="clen">
+		<xsd:annotation>
+			<xsd:documentation>Člen statutárního a jiných orgánů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="C" type="angazma" id="statutar_PO_n_FO" minOccurs="0"/>
+			<xsd:element name="CLE" type="trvani" minOccurs="0"/>
+			<xsd:element name="VF" type="trvani" minOccurs="0"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="sos">
+		<xsd:annotation>
+			<xsd:documentation>Statutární orgán společnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CSS" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="sok">
+		<xsd:annotation>
+			<xsd:documentation>Statutární orgán komplementářů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CSK" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="sop">
+		<xsd:annotation>
+			<xsd:documentation>Statutární orgán - představenstvo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CSP" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="szo">
+		<xsd:annotation>
+			<xsd:documentation>Statutární orgán zřizovatele - zahraniční osoby</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CZO" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="trvani">
+		<xsd:annotation>
+			<xsd:documentation>Datumy začátku a konce členství v orgánu pro členy dozorčích rad a statutárních orgánů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DZA" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DK" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spolecnik">
+		<xsd:annotation>
+			<xsd:documentation>Společník</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Spolecnik" type="angazma" id="vklad1" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="komplementari">
+		<xsd:annotation>
+			<xsd:documentation>Komplementáři</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KPR" type="angazma" id="vklad2" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="komanditiste">
+		<xsd:annotation>
+			<xsd:documentation>Komanditisté</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KMA" type="angazma" id="vklad5" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="clenove_sdruzeni">
+		<xsd:annotation>
+			<xsd:documentation>Členové sdružení</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CS" type="angazma" id="vklad6_od_5_2005" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="druzstevnici">
+		<xsd:annotation>
+			<xsd:documentation>Družstevníci</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DIK" type="angazma" id="vklad6" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="predstavenstvo">
+		<xsd:annotation>
+			<xsd:documentation>Člen představenstva a texty</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CPR" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spravni_rada">
+		<xsd:sequence>
+			<xsd:element name="CSR" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="nadace">
+		<xsd:annotation>
+			<xsd:documentation>Osoby v nadaci</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="OON" type="angazma" id="vklad3" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="nadacni_fond">
+		<xsd:annotation>
+			<xsd:documentation>Nadační fond, k 16.6.2003 se ještě nevyskytuje</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="OOF" type="angazma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="CLE" type="trvani" minOccurs="0"/>
+			<xsd:element name="VF" type="trvani" minOccurs="0"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="revizori">
+		<xsd:sequence>
+			<xsd:element name="RE" type="angazma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spolecnici_bez_vkladu">
+		<xsd:sequence>
+			<xsd:element name="SB" type="angazma" id="spolecnik_BV_PO_n_FO" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="spolecnici_s_vkladem">
+		<xsd:sequence>
+			<xsd:element name="SS" type="angazma" id="vklad4_PO_n_FO" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="akcionari">
+		<xsd:sequence>
+			<xsd:element name="AKR" type="angazma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="ved_oz">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Vedoucí odštěpných závodů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="VOZ" type="angazma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="likvidace">
+		<xsd:annotation>
+			<xsd:documentation>Údaje k likvidaci</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="LIR" type="angazma" id="likvidator_OF" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="prokura">
+		<xsd:annotation>
+			<xsd:documentation>Údaje k prokuře</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PRA" type="angazma" id="prokurista_FO" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="reditele_ops">
+		<xsd:annotation>
+			<xsd:documentation>Ředitel obecně prospěšné společnosti se může vyskytovat pouze jako fyzická osoba</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Reditel_ops" type="angazma" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="dozorci_rada">
+		<xsd:annotation>
+			<xsd:documentation>Údaje k elementu dozorčí rada</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CDR" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="kontrolni_komise">
+		<xsd:annotation>
+			<xsd:documentation>Člen kontrolní komise u právní formy 932 (od 8/2006)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Clen_kontrolni_komise" type="clen" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zakladatele_SP">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o zakladatelích státního podniku</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZSP" type="angazma" id="zakl_SP_PO" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zakladatele_OPS">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o zakladatelích obecně prospěšné společnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZOPS" type="angazma" id="zakl_OPS_PO_n_FO" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zrizovatele_OZ">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o zřizovateli odštěpného závodu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZOZ" type="angazma" id="zriz_OZ-PO_FO" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zrizovatele_PR">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o zřizovateli příspěvkové organizace</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZPR" type="angazma" id="zriz_PR" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="nastupci_zrizovatele">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o nástupcích zřizovatele OZ (od října 2003)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="NAE" type="angazma" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zrizovatele_nadace">
+		<xsd:annotation>
+			<xsd:documentation>Údaje o zřizovatelích nadace</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ZN" type="angazma" id="zriz_nadace-PO_FO" maxOccurs="unbounded"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="odstepne_zavody">
+		<xsd:sequence>
+			<xsd:element name="OZ" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Údaje o odštěpných závodech</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="ICO" type="ico" minOccurs="0" maxOccurs="unbounded"/>
+						<xsd:element name="OF" type="obchodni_firma" minOccurs="0" maxOccurs="unbounded"/>
+						<xsd:element name="SI" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+						<xsd:element name="CIN" type="cinnosti" minOccurs="0"/>
+						<xsd:element name="V" type="angazma" id="vedouci-FO" minOccurs="0" maxOccurs="unbounded"/>
+					</xsd:sequence>
+					<xsd:attribute name="dod" type="xsd:date"/>
+					<xsd:attribute name="ddo" type="xsd:date"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="spravce">
+		<xsd:annotation>
+			<xsd:documentation>Specifické údaje o správci konkurzu + zproštění správce konkurzu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Spravce" type="angazma" id="spravce-PO_n_FO" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="konkurzy_vyrovnani">
+		<xsd:annotation>
+			<xsd:documentation>Sekce údajů o konkurzech, vyrovnáních a zamítnutích konkurzů</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Ukon" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="KKZ" type="konkurz" minOccurs="0"/>
+						<xsd:element name="VY" type="konkurz" minOccurs="0"/>
+						<xsd:element name="ZAM" type="konkurz" minOccurs="0"/>
+						<xsd:element name="Insolvence" type="konkurz" minOccurs="0"/>
+					</xsd:choice>
+					
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="konkurz">
+		<xsd:annotation>
+			<xsd:documentation>Specifické údaje o konkurzu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KVZ" type="udaje_KVZ"/>
+			<xsd:element name="SKP" type="spravce" minOccurs="0"/>
+			<xsd:element name="ZAS" type="spravce" minOccurs="0"/>
+			<xsd:element name="ZVS" type="spravce" minOccurs="0"/>
+			<xsd:element name="PRS" type="spravce" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="udaje_KVZ">
+		<xsd:annotation>
+			<xsd:documentation>Společné údaje o konkurzu, vyrovnání nebo zamítnutí konkurzu (K, V nebo Z)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Txt_KVZ" type="txt_KVZ" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="txt_KVZ">
+		<xsd:annotation>
+			<xsd:documentation>Společné údaje o konkurzu, vyrovnání nebo zamítnutí konkurzu (K, V nebo Z)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="DVE" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="T" type="textType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="pravni_forma">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Právní forma včetně popisných položek</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="KPF" type="U:kod_pravni_formy" minOccurs="0"/>
+			<xsd:element name="NPF" type="U:nazev_pravni_formy" minOccurs="0"/>
+			<xsd:element name="PFO" type="pf_osoba" id="pfo_1.0.2" minOccurs="0"/>
+			<xsd:element name="T" type="textType" id="AA0919" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="TZU" type="tzu_osoba" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+		<xsd:attribute name="zdroj" type="zdroj_type"/>
+	</xsd:complexType>
+	<xsd:simpleType name="tzu_osoba">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ osoby: Tuzemská / Zahraniční / Uprchlík / Evropská společnost</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="T"/>
+			<xsd:enumeration value="Z"/>
+			<xsd:enumeration value="U"/>
+			<xsd:enumeration value="E"/>
+			<xsd:enumeration value="Tuzemská"/>
+			<xsd:enumeration value="Zahraniční"/>
+			<xsd:enumeration value="Uprchlík"/>
+			<xsd:enumeration value="Evropská"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	
+	<xsd:complexType name="odpoved_cns">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_CNS" type="vypis_CNS" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_CNS">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z Registru církví a náboženských společností v ARES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="CNS" type="zakladni_udaje_CNS" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zakladni_udaje_CNS">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační  údaje</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="Prideleno_ICO" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Nazev_CPO" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="DIC" type="dic" minOccurs="0"/>
+			<xsd:element name="PF" type="pravni_forma" minOccurs="0"/>
+			<xsd:element name="Typ_rejstriku" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="Zrizovatel" type="U:popis" minOccurs="0"/>
+			<xsd:element name="A" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="Rozhodnuti" type="rozhodnuti" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="rozhodnuti">
+		<xsd:annotation>
+			<xsd:documentation>Údaje k registraci, zrušení, likvidaci dle číselníku rozhodnutí</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Typ_rozhodnuti" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Cislo_rozhodnuti" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Datum_rozhodnuti" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Pravni_moc" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="odpoved_RES">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_RES" type="vypis_RES" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_RES">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z registru ekonomických subjektů Českého statistického úřadu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="ZAU" type="zakladni_udaje_RES"/>
+			<xsd:element name="SI" type="adresa_ARES" id="misto_podnikani_jen_v_rozsahu_RES" minOccurs="0"/>
+			<xsd:element name="ZUJ" type="zuj" minOccurs="0"/>
+			<xsd:element name="SU" type="statisticke_udaje" minOccurs="0"/>
+			<xsd:element name="OKECE" type="okec" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Nace" type="nace" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Doplnujici_PF" type="doplnujici_pravni_formy" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="zakladni_udaje_RES">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační a alokační údaje ekonomického subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="OF" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="PF" type="pravni_forma" minOccurs="0"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Zpusob_vzniku" type="zpusob_vzniku_res" minOccurs="0"/>
+			<xsd:element name="Zpusob_zaniku" type="zpusob_zaniku_res" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="typ_fyzicke_osoby">
+		<xsd:sequence>
+			<xsd:element name="Typ_FO_kod" type="xsd:integer" minOccurs="0"/>
+			<xsd:element name="Typ_FO" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="statisticke_udaje">
+		<xsd:sequence>
+			<xsd:element name="Esa2010" type="xsd:integer" id="kod_institucionalniho_sektoru_ESA2010" minOccurs="0"/>
+			<xsd:element name="Esa2010t" type="U:popis" id="text_kodu_institucionalniho_sektoru_ESA2010" minOccurs="0"/>
+			<xsd:element name="ISK" type="xsd:integer" minOccurs="0"/>
+			<xsd:element name="ISE" type="institucionarni_sektor" minOccurs="0"/>
+			<xsd:element name="KPP" type="kategorie_poctu_pracovniku" minOccurs="0"/>
+			<xsd:element name="Fvi" type="U:popis" id="funkce_vladnich_instituci" minOccurs="0"/>
+			<xsd:element name="Ksni" type="U:popis" id="klasifikace_sluzeb_neziskovych_instituci" minOccurs="0"/>
+			<xsd:element name="Tjz" type="U:popis" id="typ_jednotky_zjistovani" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="doplnujici_pravni_formy">
+		<xsd:annotation>
+			<xsd:documentation>Doplňující právní formy v případě více právních forem u subjektu v RES</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="PF" type="pravni_forma" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="zpusob_zaniku_res">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Způsob zániku v RES ČSÚ. 5.9.2008 bylo:
+0 Nezjištěno
+1 Zrušení právnické osoby likvidací
+2 Zrušení právnické osoby bez likvidace s jedním nástupcem (fúzí)
+3 Zrušení právnické osoby bez likvidace s více nástupci (rozdělením)
+4 Zrušení právnické osoby bez likvidace bez nástupců
+5 Oznámení fyzické osoby o ukončení činnosti
+6 Rozhodnutím orgánu o odejmutí oprávnění k činnosti pro fyzickou osobu
+7 Úmrtím fyzické osoby
+8 Odstěhování z okresu
+9 Rozhodnutím z důvodu nepřeregistrace
+10 Neoprávněné vydání IČO
+11 ukončení registrace duplicitního IČO
+99 ČSÚ od 5/2018 nepředává tento údaj
+</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:short"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="zpusob_vzniku_res">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Způsob vzniku v RES ČSÚ. 6.5.2013 ještě není výčet čísel.
+			Bude zde doplněno, aby to pak bylo možno vypisovat v transformacích, kde se tento text bude překládat do angličtiny.
+</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:short"/>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="rozsah">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Požadovaný rozsah výpisu (0=aktuální, 1=úplný, 2=výpis stavu k zadanému datumu)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:short">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="zuj">
+		<xsd:sequence>
+			<xsd:element name="Zuj_kod_orig" type="U:popis" minOccurs="0"/>
+			<xsd:element name="NZUJ" type="U:nazev_obce" id="nazev_zuj_2008_03" minOccurs="0"/>
+			<xsd:element name="KOK" type="U:kod_okresu" minOccurs="0"/>
+			<xsd:element name="NOK" type="U:nazev_okresu" minOccurs="0"/>
+			<xsd:element name="NUTS4" type="cznuts" minOccurs="0"/>
+			<xsd:element name="Nazev_NUTS4" type="U:nazev_okresu" minOccurs="0"/>
+			<xsd:element name="OZK" type="U:kod_obce" minOccurs="0"/>
+			<xsd:element name="OZU" type="U:popis" minOccurs="0"/>
+			<xsd:element name="Cast_zuj_kod" type="U:kod_casti_obce" minOccurs="0"/>
+			<xsd:element name="Cast_zuj" type="U:popis" minOccurs="0"/>
+			<xsd:element name="Mestska_cast_zuj_kod" type="U:kod_mestske_casti" minOccurs="0"/>
+			<xsd:element name="Mestska_cast_zuj" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="odpoved_RZZ">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_RZZ" type="vypis_RZZ" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_RZZ">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z registru zdravotnických zařízení</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="ZAU" type="zakladni_udaje_RZZ"/>
+			<xsd:element name="SI" type="adresa_ARES" id="i_misto_podnikani_ale_jen_v_rozsahu_RES" minOccurs="0"/>
+			<xsd:element name="ZUJ" type="zuj" id="zruseno_2004-02-02" minOccurs="0"/>
+			<xsd:element name="DAU" type="dalsi_udaje" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="zakladni_udaje_RZZ">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační a alokační údaje ekonomického subjektu</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="DRZ" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="ZZT" type="typ_zdravotnickeho_zarizeni" minOccurs="0"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="typ_zdravotnickeho_zarizeni">
+		<xsd:sequence>
+			<xsd:element name="ZZK" type="xsd:integer" minOccurs="0"/>
+			<xsd:element name="ZZN" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="dalsi_udaje">
+		<xsd:sequence>
+			<xsd:element name="DRK" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="DRZ" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="TUK" type="xsd:short" minOccurs="0"/>
+			<xsd:element name="TU" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="odpoved_rcns">
+		<xsd:sequence>
+			<xsd:element name="PID" type="xsd:int"/>
+			<xsd:element name="E" type="error_ARES" minOccurs="0"/>
+			<xsd:element name="VH" type="vysledek_hledani"/>
+			<xsd:element name="PZA" type="xsd:int"/>
+			<xsd:element name="Vypis_rcns" type="vypis_rcns" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="vypis_rcns">
+		<xsd:annotation>
+			<xsd:documentation>Výpis z Registru církví a náboženských společností v ARES 1.0.1</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="UVOD" type="uvod" minOccurs="0"/>
+			<xsd:element name="RCNS" type="zakladni_udaje_RCNS" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="zakladni_udaje_RCNS">
+		<xsd:annotation>
+			<xsd:documentation>Základní identifikační  údaje</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Datum_zmeny" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="LA" type="xsd:int" minOccurs="0"/>
+			<xsd:element name="SCI" type="U:popis" minOccurs="0"/>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="Nazev_CPO" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="DIC" type="dic" minOccurs="0"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+			<xsd:element name="Typ_CNS" type="typ_CNS" minOccurs="0"/>
+			<xsd:element name="Zkr_statu" type="zkr_statu" minOccurs="0"/>
+			<xsd:element name="NS" type="U:nazev_statu" minOccurs="0"/>
+			<xsd:element name="KPF" type="U:kod_pravni_formy" minOccurs="0"/>
+			<xsd:element name="NPF" type="U:nazev_pravni_formy" minOccurs="0"/>
+			<xsd:element name="RCI" type="registrace_RCNS" minOccurs="0"/>
+			<xsd:element name="A" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Zvlastni_prava" type="texty" minOccurs="0"/>
+			<xsd:element name="Zpusob_jednani" type="texty" minOccurs="0"/>
+			<xsd:element name="Organy" type="organy" minOccurs="0"/>
+			<xsd:element name="LII" type="organy" minOccurs="0"/>
+			<xsd:element name="Spravci" type="organy" minOccurs="0"/>
+			<xsd:element name="CSV" type="ico" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="typ_CNS">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Typ subjektu v RCNS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Církev"/>
+			<xsd:enumeration value="Svaz"/>
+			<xsd:enumeration value="Právnická osoba"/>
+			<xsd:enumeration value="Církevní právnická osoba"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="registrace_RCNS">
+		<xsd:annotation>
+			<xsd:documentation>Informace o registraci církve</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Datum_reg_prav" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Cislo_reg_prav" type="cislo_registrace" minOccurs="0"/>
+			<xsd:element name="Datum_zrus_reg_prav" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Cislo_zrus_reg_prav" type="cislo_registrace" minOccurs="0"/>
+			<xsd:element name="DV" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Cislo_registrace" type="cislo_registrace" minOccurs="0"/>
+			<xsd:element name="Datum_zrus_reg" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Cislo_zrus_reg" type="cislo_registrace" minOccurs="0"/>
+			<xsd:element name="Datum_likvidace" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Datum_konkurzu" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="DZ" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="Zpusob_vymazu" type="zpusob_vymazu" minOccurs="0"/>
+			<xsd:element name="Nastupce" type="U:ico" minOccurs="0"/>
+			<xsd:element name="Zrizovatel" type="U:ico" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="cislo_registrace">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">číslo registrace CNS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="zpusob_vymazu">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Způsob výmazu CNS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="organy">
+		<xsd:annotation>
+			<xsd:documentation>Orgány jsou angazma rozsirene o dic, stat, pr.formu, fyz.osobu v pravnicke, rodné prijmeni a rc cizince</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Organ" type="organ" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="organ">
+		<xsd:annotation>
+			<xsd:documentation>Kombinované angažmá -  rozsirena PO je s více FO</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ICO" type="U:ico" minOccurs="0"/>
+			<xsd:element name="OF" type="U:obchodni_firma" minOccurs="0"/>
+			<xsd:element name="FU" type="financni_urad" minOccurs="0"/>
+			<xsd:element name="DIC" type="dic" minOccurs="0"/>
+			<xsd:element name="Zkr_statu" type="zkr_statu" minOccurs="0"/>
+			<xsd:element name="NS" type="U:nazev_statu" minOccurs="0"/>
+			<xsd:element name="KPF" type="U:kod_pravni_formy" minOccurs="0"/>
+			<xsd:element name="NPF" type="U:nazev_pravni_formy" minOccurs="0"/>
+			<xsd:element name="A" type="adresa_ARES" minOccurs="0"/>
+			<xsd:element name="Organ_FO" type="organ_FO" id="fyzicka_osoba_RCNS" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:complexType name="organ_FO">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Údaje fyzické osoby v RCNS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Nazev_organu" type="U:popis" minOccurs="0"/>
+			<xsd:element name="Poznamka" type="U:popis" minOccurs="0"/>
+			<xsd:element name="TP" type="U:titul_pred" minOccurs="0"/>
+			<xsd:element name="J" type="U:jmeno" minOccurs="0"/>
+			<xsd:element name="P" type="U:prijmeni" minOccurs="0"/>
+			<xsd:element name="Rodne_prijmeni" type="U:prijmeni" minOccurs="0"/>
+			<xsd:element name="TZ" type="U:titul_za" minOccurs="0"/>
+			<xsd:element name="A" type="adresa_ARES" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="dod" type="xsd:date"/>
+		<xsd:attribute name="ddo" type="xsd:date"/>
+	</xsd:complexType>
+	<xsd:simpleType name="zkr_statu">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Zkratka státu na 3 písmena</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="chybova_odpoved">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Chybová odpověď v elementu Fault</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="faultcode" type="U:popis" minOccurs="0"/>
+			<xsd:element name="faultstring" type="U:popis" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="nace">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Klasifikace ekonomických činností (CZ-NACE) ČSÚ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="NACE" type="kod_nace" maxOccurs="unbounded"/>
+			<xsd:element name="Nazev_NACE" type="nazev_nace" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="kod_nace">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">NACE</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="kod_naceSimpleType">
+				<xsd:attribute name="dod" type="xsd:date"/>
+				<xsd:attribute name="ddo" type="xsd:date"/>
+				<xsd:attribute name="zdroj" type="zdroj_type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="kod_naceSimpleType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="6"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nazev_nace">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Název CZ-NACE</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="240"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="kod_oboru">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="cs">Kód oboru v kvalifikaci živnosti</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+</xsd:schema>

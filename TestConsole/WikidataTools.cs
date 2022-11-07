@@ -7,21 +7,23 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using WikiClientLibrary.Client;
 using WikiClientLibrary.Sites;
+using WikiClientLibrary.Wikibase;
 
 namespace TestConsole
 {
     public static class WikidataTools
     {
-        private const string Version = "0.1";
+        public const string ProductName = "MormegilsBot";
+        public const string Version = "0.1";
 
-        private const string UserAgent = "MormegilsBot/" + Version + " (mormegil@centrum.cz) " + WikiClient.WikiClientUserAgent;
+        public const string UserAgent = $"${ProductName}/${Version} (mormegil@centrum.cz) ${WikiClient.WikiClientUserAgent}";
 
         private const string WikidataApiEndpoint = "https://www.wikidata.org/w/api.php";
         private const string QueryEndpoint = "https://query.wikidata.org/sparql";
 
         public static async Task<WikiSite> Init()
         {
-            var wikiClient = new WikiClient {ClientUserAgent = UserAgent};
+            var wikiClient = new WikiClient { ClientUserAgent = UserAgent };
             var wikidataSite = new WikiSite(wikiClient, WikidataApiEndpoint);
             await wikidataSite.Initialization;
 
@@ -32,8 +34,9 @@ namespace TestConsole
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+            // TODO: Alternate POSTed form for long queries
             // TODO: URI building and escaping
-            var uriBuilder = new UriBuilder(QueryEndpoint) {Query = "format=json&query=" + Uri.EscapeDataString(sparql)};
+            var uriBuilder = new UriBuilder(QueryEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
             return client.GetStringAsync(uriBuilder.Uri);
         }
 
@@ -72,7 +75,7 @@ namespace TestConsole
             }
         }
 
-        public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').LastOrDefault();
+        public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').Last();
 
         public static string GenerateRandomEditGroupId()
         {
@@ -83,5 +86,12 @@ namespace TestConsole
         }
 
         public static string MakeEditSummary(string summary, string editGroupId) => $"{summary} ([[:toollabs:editgroups/b/CB/{editGroupId}|details]])";
+
+        public static async Task<string?> GetLabel(WikiSite wikidataSite, string qid, string language)
+        {
+            var entity = new Entity(wikidataSite, qid);
+            await entity.RefreshAsync(EntityQueryOptions.FetchLabels, new[] { language });
+            return entity.Labels[language];
+        }
     }
 }
