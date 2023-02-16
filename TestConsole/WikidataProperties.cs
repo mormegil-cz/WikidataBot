@@ -14,4 +14,6 @@ public static class WikidataProperties
     public const string AccessDate = "P813";
     public const string LocatedInAdminEntity = "P131";
     public const string Coordinates = "P625";
+
+    public const string FotbalIdnesId = "P3663";
 }
