@@ -46,7 +46,7 @@ namespace TestConsole
             // await IihfWcNormalization.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
             // await FixHqFromAres.Run(wikidataSite);
-            await RemapFotbalIdnes.Run(wikidataSite);
+            await RemapFotbalIdnesReferences.Run(wikidataSite);
         }
     }
 }
