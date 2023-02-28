@@ -43,8 +43,8 @@ SELECT ?ico WHERE {
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_po-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
-                        // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-20220822.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_po-2022-12-20.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                        // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-2022-12-20.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -344,8 +344,8 @@ SELECT ?ico WHERE {
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
                 new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                // new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2022, 08, 22, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
+                //new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
+                new Snak("P813", new WbTime(2022, 12, 20, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
             ));
             var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
