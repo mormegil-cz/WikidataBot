@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using TestConsole.Integration.Mastodon;
 using WikiClientLibrary.Sites;
@@ -12,7 +11,7 @@ namespace TestConsole.Tasks;
 
 using static WikidataTools;
 
-public class MastodonAddFromDate
+public static class MastodonAddFromDate
 {
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Adding start date to Mastodon accounts", EditGroupId);
@@ -35,7 +34,7 @@ SELECT DISTINCT ?item WHERE {
   MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank }
   MINUS { ?stmt pq:P580 [] }
 }
-LIMIT 100
+LIMIT 500
 "), new Dictionary<string, string> { { "item", "uri" } }).ToList();
             if (entities.Count == 0) break;
 

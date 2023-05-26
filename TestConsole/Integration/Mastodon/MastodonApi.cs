@@ -11,7 +11,7 @@ using WikiClientLibrary.Wikibase.DataTypes;
 
 namespace TestConsole.Integration.Mastodon;
 
-public class MastodonApi
+public static class MastodonApi
 {
     private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
@@ -34,9 +34,9 @@ public class MastodonApi
         return client;
     }
 
-    public static async Task<string?> GetProfileUrl(string mastodonAccountId, string entityId)
+    public static async Task<string?> GetProfileUrl(string? mastodonAccountId, string entityId)
     {
-        var match = reAccountParseFormat.Match(mastodonAccountId);
+        var match = reAccountParseFormat.Match(mastodonAccountId ?? "");
         if (!match.Success)
         {
             await Console.Error.WriteLineAsync($"Invalid/unexpected account ID format at {entityId}: '{mastodonAccountId}'");
