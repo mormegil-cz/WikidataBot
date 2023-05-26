@@ -45,8 +45,9 @@ namespace TestConsole
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await IihfWcNormalization.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
-            await FixHqFromAres.Run(wikidataSite);
+            // await FixHqFromAres.Run(wikidataSite);
             // await RemapFotbalIdnesReferences.Run(wikidataSite);
+            await MastodonAddFromDate.Run(wikidataSite);
         }
     }
 }

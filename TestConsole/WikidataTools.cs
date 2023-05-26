@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -93,5 +95,14 @@ namespace TestConsole
             await entity.RefreshAsync(EntityQueryOptions.FetchLabels, new[] { language });
             return entity.Labels[language];
         }
+
+        public static string EncodeUrlParameters(FormattableString url) =>
+            String.Format(
+                CultureInfo.InvariantCulture,
+                url.Format,
+                url.GetArguments()
+                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .ToArray()
+            );
     }
 }
