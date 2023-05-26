@@ -33,7 +33,7 @@ namespace TestConsole
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
 
             // await Experiments.Run(wikidataSite);
-            await ImportDsPerIco.Run(wikidataSite);
+            // await ImportDsPerIco.Run(wikidataSite);
             // await FixReferenceAccessDate.Run(wikidataSite);
             // await DrobnePamatkyDeprecated.Run(wikidataSite);
             // await CzechStationsPolishAccuracy.Run(wikidataSite);
@@ -45,7 +45,7 @@ namespace TestConsole
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await IihfWcNormalization.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
-            // await FixHqFromAres.Run(wikidataSite);
+            await FixHqFromAres.Run(wikidataSite);
             // await RemapFotbalIdnesReferences.Run(wikidataSite);
         }
     }

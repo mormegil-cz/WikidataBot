@@ -19,6 +19,13 @@ namespace TestConsole.Tasks
 
         private const int QuerySkip = 0;
 
+        internal const bool ImportingPo = false;
+        internal static readonly DateOnly ImportDate = new(2023, 05, 12);
+
+        private static readonly string ImportFileName = ImportingPo
+            ? @$"c:\Users\petrk\Downloads\seznam_ds_po-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz"
+            : @$"c:\Users\petrk\Downloads\seznam_ds_ovm-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz";
+
         private static int MissingEntries = 0;
         private static int UpToDateEntries = 0;
         private static int DifferentEntries = 0;
@@ -43,8 +50,7 @@ SELECT ?ico WHERE {
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
                 {
-                    await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_po-2022-12-20.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
-                        // await foreach (var batch in LoadDsData(@"c:\Users\petrk\Downloads\seznam_ds_ovm-2022-12-20.xml.gz").Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
+                    await foreach (var batch in LoadDsData(ImportFileName).Where(row => missingIcos.Contains(row.Key)).Batch(QueryBatchSize))
                     {
                         while (Console.KeyAvailable)
                         {
@@ -297,7 +303,7 @@ SELECT ?ico WHERE {
             if (outputWriter == null || batchStart < queryBatchNumber - ImportBatchSize)
             {
                 outputWriter?.Close();
-                outputWriter = new StreamWriter($"qs-import-datafile-seznam_ds_ovm-20210111092054-batch-{importBatch:000}.tsv", false, Encoding.UTF8);
+                outputWriter = new StreamWriter($"qs-import-datafile-batch-{importBatch:000}.tsv", false, Encoding.UTF8);
                 batchStart = queryBatchNumber;
                 ++importBatch;
             }
@@ -339,13 +345,15 @@ SELECT ?ico WHERE {
             var entity = new Entity(wikidataSite, qid);
             var claimDsid = new Claim(new Snak("P8987", dsid, BuiltInDataTypes.ExternalId));
             claimDsid.References.Add(new ClaimReference(
-                new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Právnické osoby"), BuiltInDataTypes.MonolingualText),
-                // new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Orgány veřejné moci"), BuiltInDataTypes.MonolingualText),
+                ImportDsPerIco.ImportingPo
+                    ? new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Právnické osoby"), BuiltInDataTypes.MonolingualText)
+                    : new Snak("P1476", new WbMonolingualText("cs", "Seznam datových schránek : Orgány veřejné moci"), BuiltInDataTypes.MonolingualText),
                 new Snak("P123", "Q11781499", BuiltInDataTypes.WikibaseItem),
                 new Snak("P2701", "Q2115", BuiltInDataTypes.WikibaseItem),
-                new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url),
-                //new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
-                new Snak("P813", new WbTime(2022, 12, 20, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
+                ImportDsPerIco.ImportingPo
+                    ? new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_po", BuiltInDataTypes.Url)
+                    : new Snak("P854", "https://www.mojedatovaschranka.cz/sds/datafile?format=xml&service=seznam_ds_ovm", BuiltInDataTypes.Url),
+                new Snak("P813", new WbTime(ImportDsPerIco.ImportDate.Year, ImportDsPerIco.ImportDate.Month, ImportDsPerIco.ImportDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
             ));
             var edits = new[] { new EntityEditEntry(nameof(Entity.Claims), claimDsid) };
             await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);

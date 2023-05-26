@@ -16,7 +16,7 @@ namespace TestConsole.Tasks;
 public class UpdateZipFromRuian
 {
     private const string BasePath = @"y:\_mine\wikidata-imports\psc";
-    private static readonly DateOnly ImportCsvDate = new(2022, 09, 30);
+    private static readonly DateOnly ImportCsvDate = new(2023, 04, 30);
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     private static readonly string ImportCsvFile = $"{ImportCsvDate:yyyyMMdd}_OB_ADR_csv.zip";
