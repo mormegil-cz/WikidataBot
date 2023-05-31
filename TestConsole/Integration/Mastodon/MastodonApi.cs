@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using KristofferStrube.ActivityStreams;
@@ -16,15 +17,16 @@ public static class MastodonApi
     private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     // no port, no IP-address-only, limit length (just some random limit, could be raised)
-    private static readonly Regex reUrlValidator = new(@"^https?://[a-z][a-z0-9.-]*/.{0,100}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex reUrlValidator = new(@"^https?://[0-9a-z.-]*[a-z][a-z0-9.-]*/.{0,100}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-    private static readonly HttpClient webFingerHttpClient = InitHttpClient("application/jrd+json");
-    private static readonly HttpClient activityHttpClient = InitHttpClient("application/activity+json");
+    private static readonly HttpClient webFingerHttpClient = InitHttpClient("application/jrd+json", 5);
+    private static readonly HttpClient activityHttpClient = InitHttpClient("application/activity+json", 0);
 
-    private static HttpClient InitHttpClient(string acceptMediaType)
+    private static HttpClient InitHttpClient(string acceptMediaType, int maxAutomaticRedirections)
     {
         var redirectHandler = new HttpClientHandler();
-        redirectHandler.AllowAutoRedirect = false;
+        redirectHandler.AllowAutoRedirect = maxAutomaticRedirections > 0;
+        if (maxAutomaticRedirections > 0) redirectHandler.MaxAutomaticRedirections = maxAutomaticRedirections;
         var client = new HttpClient(redirectHandler);
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptMediaType));
@@ -48,6 +50,7 @@ public static class MastodonApi
         JsonResourceDescriptor? descriptor;
         try
         {
+            webFingerHttpClient.DefaultRequestHeaders.Date = DateTimeOffset.UtcNow;
             var response = await webFingerHttpClient.GetAsync(WikidataTools.EncodeUrlParameters($"https://{server}/.well-known/webfinger?resource=acct:{mastodonAccountId}&rel=self"));
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -65,6 +68,11 @@ public static class MastodonApi
         catch (TaskCanceledException)
         {
             await Console.Error.WriteLineAsync($"Timeout fingering '{mastodonAccountId}' for {entityId}");
+            return null;
+        }
+        catch (JsonException)
+        {
+            await Console.Error.WriteLineAsync($"Invalid JSON returned when fingering '{mastodonAccountId}' for {entityId}");
             return null;
         }
 
@@ -89,6 +97,7 @@ public static class MastodonApi
         Actor? actor;
         try
         {
+            activityHttpClient.DefaultRequestHeaders.Date = DateTimeOffset.UtcNow;
             var response = await activityHttpClient.GetAsync(profileUrl);
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -106,6 +115,11 @@ public static class MastodonApi
         catch (TaskCanceledException)
         {
             await Console.Error.WriteLineAsync($"Timeout reading profile of '{mastodonAccountId}' at '{profileUrl}' for {entityId}");
+            return null;
+        }
+        catch (JsonException)
+        {
+            await Console.Error.WriteLineAsync($"Invalid JSON returned when reading profile of '{mastodonAccountId}' at '{profileUrl}' for {entityId}");
             return null;
         }
 
