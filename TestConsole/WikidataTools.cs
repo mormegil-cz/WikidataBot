@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -79,6 +78,14 @@ namespace TestConsole
 
         public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').Last();
 
+        public static string GetStatementIdFromUri(string statementUri) => ReplaceFirst(new Uri(statementUri).AbsolutePath.Split('/').Last(), '-', '$');
+
+        private static string ReplaceFirst(string str, char from, char to)
+        {
+            var index = str.IndexOf(from);
+            return index < 0 ? str : str[..index] + to + str[(index + 1)..];
+        }
+
         public static string GenerateRandomEditGroupId()
         {
             var rng = RandomNumberGenerator.Create();
@@ -101,7 +108,7 @@ namespace TestConsole
                 CultureInfo.InvariantCulture,
                 url.Format,
                 url.GetArguments()
-                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .Select(a => (object)Uri.EscapeDataString(a?.ToString() ?? ""))
                     .ToArray()
             );
     }

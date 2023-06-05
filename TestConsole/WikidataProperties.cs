@@ -3,6 +3,8 @@ namespace TestConsole;
 public static class WikidataProperties
 {
     public const string StartTime = "P580";
+    public const string OfficialName = "P1448";
+    public const string LexemeSense = "P7018";
 
     public const string HqLocation = "P159";
 
