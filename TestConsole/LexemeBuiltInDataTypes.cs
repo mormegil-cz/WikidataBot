@@ -21,7 +21,6 @@ public static class LexemeBuiltInDataTypes
     private static string EntityIdFromJson(JToken value)
     {
         var id = (string)value["id"];
-        id = null;
         if (id != null) return id;
         var type = (string)value["entity-type"];
         switch (type)
@@ -47,11 +46,11 @@ public static class LexemeBuiltInDataTypes
         if (id == null) throw new ArgumentNullException(nameof(id));
         id = id.Trim();
         if (id.Length < 2) throw new ArgumentException("Invalid entity identifier.", nameof(id));
-        int idValue;
         var hyphen = id.IndexOf('-');
         var value = new JObject();
         if (hyphen < 0)
         {
+            if (id[0] != 'L') throw new ArgumentException("Unsupported entity identifier format: " + id, nameof(id));
             value.Add("entity-type", "lexeme");
             value.Add("numeric-id", Int32.Parse(id));
             return value;
