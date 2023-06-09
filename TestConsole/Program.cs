@@ -47,8 +47,8 @@ namespace TestConsole
             // await UpdateZipFromRuian.Run(wikidataSite);
             // await FixHqFromAres.Run(wikidataSite);
             // await RemapFotbalIdnesReferences.Run(wikidataSite);
-            // await MastodonAddFromDate.Run(wikidataSite);
-            await LinkMunicipalityNameToLexeme.Run(wikidataSite);
+            await MastodonAddFromDate.Run(wikidataSite);
+            // await LinkMunicipalityNameToLexeme.Run(wikidataSite);
         }
     }
 }

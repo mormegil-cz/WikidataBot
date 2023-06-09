@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -14,7 +15,31 @@ namespace TestConsole.Integration.Mastodon;
 
 public static class MastodonApi
 {
-    private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly HashSet<String> serverBlacklist = new()
+    {
+        // Request signature required
+        "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social",
+
+        // No account published date
+        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net",
+
+        // DNS failure
+        "mastodon.technology", "mastodon.etalab.gouv.fr", "quitter.im", "mastoforce.social", "socialscience.re", "m.sclo.nl", "mstdn.soc", "mastodon.soc", "social.bitcast.info", "mastodon.huma-num.fr", "mstdn.sci", "social.numerama.com", "joura.host",
+
+        // SSl failure
+        "mstdn.appliedecon.social", "camerondcampbell.masto.host", "mastodonten.de", "peertube.video", "soc.ialis.me",
+
+        // Timeout
+        "eupublic.social", "content.town",
+
+        // Connection refused
+        "oyd.social",
+
+        // Invalid JSON received
+        "social.csswg.org", "mastodon.at", "mail.huji.ac.il",
+    };
+
+    private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@/%]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     // no port, no IP-address-only, limit length (just some random limit, could be raised)
     private static readonly Regex reUrlValidator = new(@"^https?://[0-9a-z.-]*[a-z][a-z0-9.-]*/.{0,100}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
@@ -47,11 +72,17 @@ public static class MastodonApi
         var username = match.Groups[1].Value;
         var server = match.Groups[2].Value;
 
+        if (serverBlacklist.Contains(server))
+        {
+            await Console.Error.WriteLineAsync($"Skipping blacklisted server in '{mastodonAccountId}' at {entityId}");
+            return null;
+        }
+
         JsonResourceDescriptor? descriptor;
         try
         {
             webFingerHttpClient.DefaultRequestHeaders.Date = DateTimeOffset.UtcNow;
-            var response = await webFingerHttpClient.GetAsync(WikidataTools.EncodeUrlParameters($"https://{server}/.well-known/webfinger?resource=acct:{mastodonAccountId}&rel=self"));
+            var response = await webFingerHttpClient.GetAsync($"https://{server}/.well-known/webfinger?resource=acct:{Uri.EscapeDataString(mastodonAccountId)}&rel=self");
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 await Console.Error.WriteLineAsync($"Unexpected status code from {server}: {response.StatusCode} when fingering '{mastodonAccountId}' at {entityId}");
@@ -63,6 +94,11 @@ public static class MastodonApi
         catch (HttpRequestException e)
         {
             await Console.Error.WriteLineAsync($"Error fingering '{mastodonAccountId}' for {entityId}: {e.Message}");
+            return null;
+        }
+        catch (UriFormatException e)
+        {
+            await Console.Error.WriteLineAsync($"Invalid server in '{mastodonAccountId}' for {entityId}: {e.Message}");
             return null;
         }
         catch (TaskCanceledException)
