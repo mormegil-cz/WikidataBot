@@ -10,7 +10,7 @@ using static TestConsole.WikidataTools;
 
 namespace TestConsole.Tasks;
 
-public class FixHqFromAres
+public static class FixHqFromAres
 {
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Fixing broken HQ location from ARES", EditGroupId);
