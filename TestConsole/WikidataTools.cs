@@ -38,7 +38,15 @@ namespace TestConsole
             // TODO: Alternate POSTed form for long queries
             // TODO: URI building and escaping
             var uriBuilder = new UriBuilder(QueryEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
-            return client.GetStringAsync(uriBuilder.Uri);
+            try
+            {
+                return client.GetStringAsync(uriBuilder.Uri);
+            }
+            catch (HttpRequestException)
+            {
+                Console.Error.WriteLine("Error in SPARQL: " + sparql);
+                throw;
+            }
         }
 
         public static IEnumerable<IList<string?>> GetEntities(string queryResultJson, IDictionary<string, string> fields)
@@ -108,7 +116,7 @@ namespace TestConsole
                 CultureInfo.InvariantCulture,
                 url.Format,
                 url.GetArguments()
-                    .Select(a => (object)Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
                     .ToArray()
             );
     }

@@ -29,8 +29,8 @@ namespace TestConsole
 
             var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "" }) ?? throw new FormatException("Missing configuration");
 
-            await Console.Error.WriteLineAsync("Logging in...");
-            await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
+            // await Console.Error.WriteLineAsync("Logging in...");
+            // await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
 
             // await Experiments.Run(wikidataSite);
             // await ImportDsPerIco.Run(wikidataSite);
@@ -49,7 +49,8 @@ namespace TestConsole
             // await RemapFotbalIdnesReferences.Run(wikidataSite);
             // await MastodonAddFromDate.Run(wikidataSite);
             // await LinkMunicipalityNameToLexeme.Run(wikidataSite);
-            await SwitchTopicClassification.Run(wikidataSite);
+            // await SwitchTopicClassification.Run(wikidataSite);
+            await WikidataTreeBuilder.Run();
         }
     }
 }
