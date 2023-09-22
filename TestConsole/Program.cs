@@ -50,7 +50,9 @@ namespace TestConsole
             // await MastodonAddFromDate.Run(wikidataSite);
             // await LinkMunicipalityNameToLexeme.Run(wikidataSite);
             // await SwitchTopicClassification.Run(wikidataSite);
-            await WikidataTreeBuilder.Run();
+            // await WikidataTreeBuilder.Run();
+            // await SwitchTopicClassification.Run(wikidataSite);
+            await ImportCadastralCoords.Run(wikidataSite);
         }
     }
 }
