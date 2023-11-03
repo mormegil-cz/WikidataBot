@@ -1,3 +1,5 @@
+using System;
+
 namespace TestConsole;
 
 public static class WikidataProperties
@@ -18,6 +20,7 @@ public static class WikidataProperties
     public const string StatedIn = "P248";
     public const string ReferenceUrl = "P854";
     public const string AccessDate = "P813";
+    public const string PublishDate = "P577";
 
     public const string UdcOfConcept = "P1190";
     public const string UdcOfTopic = "P8361";
@@ -25,4 +28,6 @@ public static class WikidataProperties
     public const string Mastodon = "P4033";
 
     public const string FotbalIdnesId = "P3663";
+
+    public static readonly Uri GlobeEarth = new("http://www.wikidata.org/entity/Q2");
 }

@@ -30,24 +30,5 @@ SELECT ?csfd ?imdb WHERE {
                 }
             }
         }
-
-        private static IEnumerable<TSource[]> Batch<TSource>(
-            this IEnumerable<TSource> source, int size)
-        {
-            var bucket = new TSource[size];
-            var count = 0;
-
-            foreach (var item in source)
-            {
-                bucket[count++] = item;
-                if (count == size)
-                {
-                    yield return bucket;
-                    count = 0;
-                }
-            }
-
-            if (count > 0) yield return bucket.Take(count).ToArray();
-        }
     }
 }
