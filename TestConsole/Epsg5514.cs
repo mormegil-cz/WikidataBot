@@ -96,6 +96,6 @@ public static class Epsg5514
         L = L / Math.PI * 180;
         H = H - 45;
 
-        return ((float)B, (float)L, (float)H);
+        return ((float)Math.Round(B, 3), (float)Math.Round(L, 3), (float)Math.Round(H));
     }
 }

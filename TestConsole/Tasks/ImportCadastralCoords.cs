@@ -20,9 +20,14 @@ public partial class ImportCadastralCoords
     private const string XMLNS_KUI = "urn:cz:isvs:ruian:schemas:KatUzIntTypy:v1";
     private const string XMLNS_GML = "http://www.opengis.net/gml/3.2";
 
+    private static readonly DateOnly RuianDumpDate = new(2023, 10, 31);
+    private static readonly string RuianDumpFilename = $"{RuianDumpDate:yyyyMMdd}_ST_UZSZ.xml.zip";
+
     public static async Task Run(WikiSite wikidataSite)
     {
-        var ruianData = await LoadXmlData(@"c:\Users\petrk\Downloads\20230831_ST_UZSZ.xml.zip");
+        // https://vdp.cuzk.cz/vdp/ruian/vymennyformat?crKopie=on&casovyRozsah=U&upStatAzZsj=on&uzemniPrvky=ST&dsZakladni=on&datovaSada=Z&vyZakladni=on&vyber=vyZakladni&search=
+        // https://vdp.cuzk.cz/vymenny_format/soucasna/20231031_ST_UZSZ.xml.zip
+        var ruianData = await LoadXmlData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", RuianDumpFilename));
     }
 
     private static async Task<Dictionary<string, (float, float)>> LoadXmlData(string filename)
@@ -72,18 +77,18 @@ public partial class ImportCadastralCoords
                         reader.ReadStartElement("Point", XMLNS_GML);
                         reader.ReadStartElement("pos", XMLNS_GML);
                         coordsStr = await reader.ReadContentAsStringAsync();
-                        await XmlReadEnd(reader); // /pos
-                        await XmlReadEnd(reader); // /Point
+                        XmlReadEnd(reader); // /pos
+                        XmlReadEnd(reader); // /Point
                         if (reader is { NodeType: XmlNodeType.Element, LocalName: "Point" })
                         {
                             // multipoint!?
                             Console.WriteLine("Warning: Skipping additional coordinates for " + kod);
                             await XmlSkipTo(reader, XmlNodeType.EndElement, XMLNS_GML, "pointMembers", null, null, null);
                         }
-                        await XmlReadEnd(reader); // /pointMembers
-                        await XmlReadEnd(reader); // /MultiPoint
-                        await XmlReadEnd(reader); // /DefinicniBod
-                        await XmlReadEnd(reader); // /Geometrie
+                        XmlReadEnd(reader); // /pointMembers
+                        XmlReadEnd(reader); // /MultiPoint
+                        XmlReadEnd(reader); // /DefinicniBod
+                        XmlReadEnd(reader); // /Geometrie
                         /*
                         reader.ReadEndElement();
                         reader.ReadEndElement();
@@ -111,7 +116,7 @@ public partial class ImportCadastralCoords
         return result;
     }
 
-    private static async Task XmlReadEnd(XmlReader reader)
+    private static void XmlReadEnd(XmlReader reader)
     {
         if (reader.NodeType != XmlNodeType.EndElement) throw new FormatException($"End of element expected, but {reader.NodeType} '{reader.Name}' found");
         reader.ReadEndElement();
