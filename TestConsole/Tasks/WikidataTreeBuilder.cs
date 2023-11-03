@@ -16,8 +16,8 @@ public static class WikidataTreeBuilder
 
     public static async Task Run()
     {
-        // var queue = await FilterItemsToClasses();
-        var queue = new HashSet<string>(await File.ReadAllLinesAsync(@"/home/petr/Downloads/5000-most-used-wikidata-classes-list.txt"));
+        var queue = await FilterItemsToClasses();
+        // var queue = new HashSet<string>(await File.ReadAllLinesAsync(@"/home/petr/Downloads/5000-most-used-wikidata-classes-list.txt"));
 
         var batch = 0;
         var processedEntities = new HashSet<string>();
@@ -35,19 +35,19 @@ public static class WikidataTreeBuilder
 
             var entities = GetEntities(await GetSparqlResults(@"
 SELECT ?item ?itemLabel ?parents WHERE {
-  {
-    SELECT ?item (GROUP_CONCAT(?parent; SEPARATOR = "" "") AS ?parents) WHERE {
-      hint:Query hint:optimizer ""None"".
-      VALUES ?item { " + String.Join(' ', itemsToProcess.Select(item => "wd:" + item)) + @" }
-      {
-          { ?item wdt:P279 ?parent }
-          UNION
-          { }
-      }
-    }
-    GROUP BY ?item
-  }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"". }
+	{
+		SELECT ?item (GROUP_CONCAT(?parent; SEPARATOR = "" "") AS ?parents) WHERE {
+			hint:Query hint:optimizer ""None"".
+			VALUES ?item { " + String.Join(' ', itemsToProcess.Select(item => "wd:" + item)) + @" }
+			{
+				{ ?item wdt:P279 ?parent }
+				UNION
+				{ }
+			}
+		}
+		GROUP BY ?item
+	}
+	SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"". }
 }"), new Dictionary<string, string> { { "item", "uri" }, { "itemLabel", "literal" }, { "parents", "literal" } }).ToList();
 
             Console.WriteLine("OK");
@@ -105,7 +105,7 @@ SELECT ?item ?itemLabel ?parents WHERE {
         {
             ++batch;
 
-            var itemsToProcess = mostLinkedItems.Take(17).ToList();
+            var itemsToProcess = mostLinkedItems.Take(25).ToList();
             mostLinkedItems.ExceptWith(itemsToProcess);
 
             await Console.Error.WriteAsync($"Batch #{batch} Checking {itemsToProcess.Count} items using WQS ({mostLinkedItems.Count} remaining)...");
@@ -113,27 +113,27 @@ SELECT ?item ?itemLabel ?parents WHERE {
             var sparql = new StringBuilder();
             sparql.Append(@"
 SELECT ?item WHERE {
-  {
+	{
 ");
             var sparqlFirst = true;
             foreach (var item in itemsToProcess)
             {
-                if (!sparqlFirst) sparql.AppendLine("    UNION");
+                if (!sparqlFirst) sparql.AppendLine("\t\tUNION");
                 sparqlFirst = false;
                 sparql.Append(@"
-    {
-      SELECT ?item WHERE {
-        VALUES ?item {
-          wd:" + item + @"
-        }
-        ?inst wdt:P31 ?item.
-      }
-      LIMIT 1
-    }
+		{
+			SELECT ?item WHERE {
+				VALUES ?item {
+					wd:" + item + @"
+				}
+				?inst wdt:P31 ?item.
+			}
+			LIMIT 1
+		}
 ");
             }
             sparql.Append(@"
-  }
+	}
 }
 ");
 

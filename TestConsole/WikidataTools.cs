@@ -37,6 +37,7 @@ namespace TestConsole
             client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             // TODO: Alternate POSTed form for long queries
             // TODO: URI building and escaping
+            // TODO: Collapse multiple tabs to shorten the string
             var uriBuilder = new UriBuilder(QueryEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
             try
             {
