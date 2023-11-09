@@ -19,12 +19,15 @@ namespace TestConsole.Tasks
 
         private const int QuerySkip = 0;
 
-        internal const bool ImportingPo = false;
-        internal static readonly DateOnly ImportDate = new(2023, 05, 12);
+        internal const bool ImportingPo = true;
+        internal static readonly DateOnly ImportDate = new(2023, 11, 9);
 
-        private static readonly string ImportFileName = ImportingPo
-            ? @$"c:\Users\petrk\Downloads\seznam_ds_po-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz"
-            : @$"c:\Users\petrk\Downloads\seznam_ds_ovm-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz";
+        private const string BasePath = @"/home/petr/Downloads";
+
+        private static readonly string ImportFileName = Path.Combine(BasePath, ImportingPo
+            ? $"seznam_ds_po-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz"
+            : $"seznam_ds_ovm-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz"
+        );
 
         private static int MissingEntries = 0;
         private static int UpToDateEntries = 0;
@@ -325,7 +328,7 @@ SELECT ?ico WHERE {
     internal class BotEditingImport : IImporter
     {
         private static readonly string EditGroupId = GenerateRandomEditGroupId();
-        private static readonly string EditSummary = MakeEditSummary("DS ID import for companies based on IČO", EditGroupId);
+        private static readonly string EditSummary = MakeEditSummary($"DS ID import for {(ImportDsPerIco.ImportingPo ? "companies" : "government entities")} based on IČO", EditGroupId);
 
         private readonly WikiSite wikidataSite;
 

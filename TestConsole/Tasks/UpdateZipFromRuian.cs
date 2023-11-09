@@ -15,13 +15,12 @@ namespace TestConsole.Tasks;
 
 public class UpdateZipFromRuian
 {
-    private const string BasePath = @"y:\_mine\wikidata-imports\psc";
-    private static readonly DateOnly ImportCsvDate = new(2023, 04, 30);
+    private const string BasePath = @"/home/petr/Downloads";
+    private static readonly DateOnly ImportCsvDate = new(2023, 10, 31);
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     private static readonly string ImportCsvFile = $"{ImportCsvDate:yyyyMMdd}_OB_ADR_csv.zip";
     private static readonly WbTime importCsvWbTime = new(ImportCsvDate.Year, ImportCsvDate.Month, ImportCsvDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
-    private static readonly string importDate = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     private static readonly WbTime importWbTime = new(ImportTimestamp.Year, ImportTimestamp.Month, ImportTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
 
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
