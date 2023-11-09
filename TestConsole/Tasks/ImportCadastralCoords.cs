@@ -17,11 +17,15 @@ namespace TestConsole.Tasks;
 public partial class ImportCadastralCoords
 {
     [GeneratedRegex(@"^(-[1-9][0-9]*\.[0-9]+)\s+(-[1-9][0-9]*\.[0-9]+)$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
-    private static partial Regex CoordsParser();
+    private static partial Regex RuianCoordsParser();
 
-    private const int BatchSize = 50;
+    [GeneratedRegex(@"^Point\((-?[0-9]+\.[0-9]+)\s+(-?[0-9]+\.[0-9]+)\)$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex WikidataCoordsParser();
 
-    private static readonly string[] Languages = { };
+    private const int ImportBatchSize = 50;
+    private const int CheckBatchSize = 200;
+
+    private static readonly string[] Languages = Array.Empty<string>();
 
     private const string XMLNS_VF = "urn:cz:isvs:ruian:schemas:VymennyFormatTypy:v1";
     private const string XMLNS_KUI = "urn:cz:isvs:ruian:schemas:KatUzIntTypy:v1";
@@ -43,9 +47,15 @@ public partial class ImportCadastralCoords
         var ruianData = await LoadXmlData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", RuianDumpFilename));
         await Console.Out.WriteLineAsync($"Done, {ruianData.Count} entries loaded");
 
-        var batchCount = (ruianData.Count + BatchSize - 1) / BatchSize;
+        //await ImportCoordsToWikidata(wikidataSite, ruianData);
+        await CheckCoordsInWikidata(wikidataSite, ruianData);
+    }
+
+    private static async Task ImportCoordsToWikidata(WikiSite wikidataSite, Dictionary<string, (float, float)> ruianData)
+    {
+        var batchCount = (ruianData.Count + ImportBatchSize - 1) / ImportBatchSize;
         var batchNumber = 0;
-        foreach (var batch in ruianData.Keys.Batch(BatchSize))
+        foreach (var batch in ruianData.Keys.Batch(ImportBatchSize).Skip(batchNumber))
         {
             ++batchNumber;
             await Console.Out.WriteLineAsync($"Fetching batch {batchNumber}/{batchCount} from WQS...");
@@ -93,6 +103,116 @@ SELECT ?item ?kuid WHERE {
                 await Console.Out.WriteAsync($"Editing {entityId}...");
                 await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
                 await Console.Out.WriteLineAsync();
+            }
+        }
+    }
+
+    private static async Task CheckCoordsInWikidata(WikiSite wikidataSite, Dictionary<string, (float, float)> ruianData)
+    {
+        var batchCount = (ruianData.Count + CheckBatchSize - 1) / CheckBatchSize;
+        var batchNumber = 0;
+        foreach (var batch in ruianData.Keys.Batch(CheckBatchSize).Skip(batchNumber))
+        {
+            ++batchNumber;
+            await Console.Out.WriteAsync($"{batchNumber}...");
+
+            var kuIds = "'" + String.Join("' '", batch) + "'";
+            foreach (var row in GetEntities(await GetSparqlResults(@"
+SELECT ?item ?kuid ?coords WHERE {
+  VALUES ?kuid { " + kuIds + @" }.
+  ?item wdt:P7526 ?kuid.
+  OPTIONAL { ?item wdt:P625 ?coords }
+}"), new Dictionary<string, string> { { "item", "uri" }, { "kuid", "literal" }, { "coords", "literal" } }))
+            {
+                var entityId = GetEntityIdFromUri(row[0]!);
+                var kuId = row[1]!;
+                var coordsStr = row[2];
+
+                if (coordsStr == null)
+                {
+                    await Console.Error.WriteLineAsync($"\nEntity {entityId} does not have coordinates");
+                    continue;
+                }
+
+                var parsedCoords = WikidataCoordsParser().Match(coordsStr); 
+                if (!parsedCoords.Success) throw new FormatException("Coordinate syntax error");
+                var wdLon = Single.Parse(parsedCoords.Groups[1].Value, CultureInfo.InvariantCulture);
+                var wdLat = Single.Parse(parsedCoords.Groups[2].Value, CultureInfo.InvariantCulture);
+                
+                if (!ruianData.TryGetValue(kuId, out var coordsInRuian))
+                {
+                    await Console.Error.WriteLineAsync($"\nWARNING: No KU with '{kuId}' for entity {entityId}");
+                    continue;
+                }
+
+                // heh! :-)
+                var dist = Math.Abs(wdLat - coordsInRuian.Item1) + Math.Abs(wdLon - coordsInRuian.Item2);
+                if (dist > 0.06)
+                {
+                    await Console.Error.WriteLineAsync($"\nEntity {entityId} has suspicious coordinates ({coordsInRuian.Item1}, {coordsInRuian.Item2} expected; distance {dist * 40000 / 360.0f})");
+                }
+                
+                /*
+
+                // alternate, more thorough (and much slower) tests, fetching the whole entity data
+
+                var entity = new Entity(wikidataSite, entityId);
+                await entity.RefreshAsync(EntityQueryOptions.FetchClaims, Languages);
+
+                if (entity.Claims == null)
+                {
+                    await Console.Error.WriteLineAsync($"WARNING! Unable to read entity {entityId}!");
+                    continue;
+                }
+
+                var coordsInEntity = entity.Claims[WikidataProperties.Coordinates];
+                
+                if (coordsInEntity == null)
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} does not have coordinates");
+                    continue;
+                }
+                if (coordsInEntity.Count != 1)
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} has {coordsInEntity.Count} coordinate claims");
+                    continue;
+                }
+
+                var coordSnak = coordsInEntity.Single().MainSnak;
+                if (coordSnak.SnakType != SnakType.Value)
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} has {coordSnak.SnakType} coordinate claim");
+                    continue;
+                }
+
+                WbGlobeCoordinate wbGlobeCoordinate;
+                try
+                {
+                    wbGlobeCoordinate = (WbGlobeCoordinate) coordSnak.DataValue;
+                }
+                catch (ArgumentException e)
+                {
+                    await Console.Error.WriteLineAsync($"Error parsing coordinates in entity {entityId}!");
+                    await Console.Error.WriteLineAsync(e.ToString());
+                    continue;
+                }
+                if (wbGlobeCoordinate.Globe != WikidataProperties.GlobeEarth)
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} is on {wbGlobeCoordinate.Globe}!");
+                    continue;
+                }
+
+                // heh! :-)
+                var dist = Math.Abs(wbGlobeCoordinate.Latitude - coordsInRuian.Item1) + Math.Abs(wbGlobeCoordinate.Longitude - coordsInRuian.Item2);
+                if (dist > 0.06)
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} has suspicious coordinates ({coordsInRuian.Item1}, {coordsInRuian.Item2} expected; distance {dist * 40000 / 360.0f})");
+                }
+                // if (wbGlobeCoordinate.Precision < 0.00001)
+                // {
+                //     await Console.Error.WriteLineAsync($"Entity {entityId} uses coordinate precision of {wbGlobeCoordinate.Precision}");
+                // }
+                */
             }
         }
     }
@@ -172,7 +292,7 @@ SELECT ?item ?kuid WHERE {
                 }
             }
             if (kod == null || coordsStr == null) throw new FormatException("Missing kod or coords");
-            var parsedCoords = CoordsParser().Match(coordsStr);
+            var parsedCoords = RuianCoordsParser().Match(coordsStr);
             if (!parsedCoords.Success) throw new FormatException("Coordinate syntax error");
             var y = Single.Parse(parsedCoords.Groups[1].Value, CultureInfo.InvariantCulture);
             var x = Single.Parse(parsedCoords.Groups[2].Value, CultureInfo.InvariantCulture);
