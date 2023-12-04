@@ -18,25 +18,28 @@ public static class MastodonApi
     private static readonly HashSet<String> serverBlacklist = new()
     {
         // Request signature required
-        "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social",
+        "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social", "crimew.gay", "kind.social", "octodon.social", "scicomm.xyz",
+
+        // Forbidden
+        "counter.social",
 
         // No account published date
-        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net",
+        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net",
 
         // DNS failure
         "mastodon.technology", "mastodon.etalab.gouv.fr", "quitter.im", "mastoforce.social", "socialscience.re", "m.sclo.nl", "mstdn.soc", "mastodon.soc", "social.bitcast.info", "mastodon.huma-num.fr", "mstdn.sci", "social.numerama.com", "joura.host",
 
-        // SSl failure
+        // SSL failure
         "mstdn.appliedecon.social", "camerondcampbell.masto.host", "mastodonten.de", "peertube.video", "soc.ialis.me",
 
         // Timeout
-        "eupublic.social", "content.town",
+        "eupublic.social", "content.town", "masthead.social",
 
         // Connection refused
         "oyd.social",
 
         // Invalid JSON received
-        "social.csswg.org", "mastodon.at", "mail.huji.ac.il",
+        "social.csswg.org", "mastodon.at", "mail.huji.ac.il", "koyu.space",
     };
 
     private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@/%]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
@@ -126,7 +129,7 @@ public static class MastodonApi
     {
         if (!reUrlValidator.IsMatch(profileUrl))
         {
-            await Console.Error.WriteLineAsync($"Suspicious profile URL of '{mastodonAccountId}' at {entityId}: '{profileUrl}");
+            await Console.Error.WriteLineAsync($"Suspicious profile URL of '{mastodonAccountId}' at {entityId}: '{profileUrl}'");
             return null;
         }
 
