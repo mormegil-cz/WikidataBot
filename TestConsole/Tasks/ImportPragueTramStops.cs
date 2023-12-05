@@ -16,16 +16,28 @@ public class ImportPragueTramStops
     private static readonly string EditSummary = MakeEditSummary("Prague tram stops import", EditGroupId);
     private static readonly string[] Languages = { };
 
+    // http://data.pid.cz/PID_GTFS.zip
+    private static readonly DateOnly gtfsDownloadDate = new DateOnly(2023, 12, 5);
+    private static readonly string gtfsFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "PID_GTFS.zip");
+
     // https://data.pid.cz/stops/json/stops.json
-    private static readonly DateOnly downloadDate = new DateOnly(2023, 12, 5);
+    private static readonly DateOnly jsonDownloadDate = new DateOnly(2023, 12, 5);
     private static readonly string jsonFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "stops.json");
 
     public static async Task Run(WikiSite wikidataSite)
     {
         await Console.Out.WriteLineAsync("Loading stop data from JSON...");
-        var (importFileDate, stopsData) = await LoadStops(jsonFilename);
+        var (jsonFileDate, stopsData) = await LoadStops(jsonFilename);
         await Console.Out.WriteLineAsync($"Done, {stopsData.Count} stops loaded");
 
+        var stopPerGtfsId = new Dictionary<string, string>(stopsData.Values.SelectMany(stop => stop.GtfsIds.Select(id => new KeyValuePair<string, string>(id, stop.Name))));
+        
+        await Console.Out.WriteLineAsync("Loading route data from GTFS...");
+        var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename);
+        await Console.Out.WriteLineAsync($"Done, {routeData.Count} routes loaded");
+
+        var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
+        
         await Console.Out.WriteLineAsync("Loading stop data from Wikidata...");
         var stopsInWikidata = await FindStopsAtWikidata();
         await Console.Out.WriteLineAsync($"Done, {stopsInWikidata.Count} stops loaded");
@@ -46,7 +58,7 @@ public class ImportPragueTramStops
             await Console.Error.WriteLineAsync("Errors found, exiting");
             return;
         }
-        
+
         // P31 Q2175765 [ensured by query]
         // P16 Q1420119 [ensured by query]
         // P1448 name [ensured by query]
@@ -59,6 +71,21 @@ public class ImportPragueTramStops
         // P17 Q213
         // P625 coords
         // P5817 Q55654238 (?)
+    }
+
+    private static Dictionary<string, HashSet<string>> ComputeNeighbors(Dictionary<string, List<string>> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stops)
+    {
+        var result = new Dictionary<string, HashSet<string>>(stops.Count);
+        foreach (var route in routes.Values)
+        {
+            
+        }
+        return result;
+    }
+
+    private static async Task<(DateOnly gtfsFileDate, Dictionary<string, List<string>> routeData)> LoadGtfsRoutes(string zipFilename)
+    {
+        throw new NotImplementedException();
     }
 
     private static async Task<Dictionary<string, string>> FindStopsAtWikidata()
@@ -137,6 +164,20 @@ SELECT ?item ?name WHERE {
         return new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
     }
 
+    private static async Task<HashSet<string>> ReadStringSet(JsonTextReader jsonReader)
+    {
+        var result = new HashSet<string>();
+
+        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
+        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.String)
+        {
+            if (!result.Add((string) jsonReader.Value!)) throw new ArgumentException("Item already exists");
+        }
+        if (jsonReader.TokenType != JsonToken.EndArray) throw new FormatException("Invalid JSON data");
+
+        return result;
+    }
+
     private static async Task<Dictionary<string, StopData>> ReadTramStopGroups(JsonTextReader jsonReader)
     {
         var result = new Dictionary<string, StopData>();
@@ -155,6 +196,7 @@ SELECT ?item ?name WHERE {
             decimal? lat = null;
             decimal? lon = null;
             HashSet<LineAtStop>? lines = null;
+            HashSet<string>? gtfsIds = null;
             bool? noTramStops = null;
 
             while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.PropertyName)
@@ -185,6 +227,9 @@ SELECT ?item ?name WHERE {
                     case "municipality":
                         municipality = await ReadStringValue(jsonReader);
                         break;
+                    case "gtfsIds":
+                        gtfsIds = await ReadStringSet(jsonReader);
+                        break;
                     case "stops":
                         var stopsInGroup = await ReadTramStopsInGroup(jsonReader);
                         noTramStops = stopsInGroup == null;
@@ -198,7 +243,7 @@ SELECT ?item ?name WHERE {
 
             if (jsonReader.TokenType != JsonToken.EndObject) throw new FormatException("Invalid JSON data");
 
-            if (name == null || districtCode == null || idosName == null || fullName == null || uniqueName == null || node == null || number == null || municipality == null || noTramStops == null) throw new FormatException("Incomplete JSON data");
+            if (name == null || districtCode == null || idosName == null || fullName == null || uniqueName == null || node == null || number == null || municipality == null || gtfsIds == null || noTramStops == null) throw new FormatException("Incomplete JSON data");
 
             if (noTramStops.GetValueOrDefault()) continue;
 
@@ -207,7 +252,7 @@ SELECT ?item ?name WHERE {
 
             if (name != uniqueName) await Console.Out.WriteLineAsync($"Warning: Tram station name mismatch: {name} vs {uniqueName}");
 
-            result.Add(name, new StopData(name, idosName, fullName, uniqueName, number.GetValueOrDefault(), node.GetValueOrDefault(), lat.GetValueOrDefault(), lon.GetValueOrDefault(), lines!));
+            result.Add(name, new StopData(name, idosName, fullName, uniqueName, number.GetValueOrDefault(), node.GetValueOrDefault(), lat.GetValueOrDefault(), lon.GetValueOrDefault(), gtfsIds, lines!));
         }
         if (jsonReader.TokenType != JsonToken.EndArray) throw new FormatException("Invalid JSON data");
 
@@ -317,7 +362,7 @@ SELECT ?item ?name WHERE {
         return result.Count == 0 ? null : result;
     }
 
-    private record StopData(string Name, string IdosName, string FullName, string UniqueName, long Number, long Node, decimal Lat, decimal Lon, HashSet<LineAtStop> Lines);
+    private record StopData(string Name, string IdosName, string FullName, string UniqueName, long Number, long Node, decimal Lat, decimal Lon, HashSet<string> GtfsIds, HashSet<LineAtStop> Lines);
 
     private record struct LineAtStop(string LineName, string Direction);
 }
