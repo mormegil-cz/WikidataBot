@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,13 +32,13 @@ public class ImportPragueTramStops
         await Console.Out.WriteLineAsync($"Done, {stopsData.Count} stops loaded");
 
         var stopPerGtfsId = new Dictionary<string, string>(stopsData.Values.SelectMany(stop => stop.GtfsIds.Select(id => new KeyValuePair<string, string>(id, stop.Name))));
-        
+
         await Console.Out.WriteLineAsync("Loading route data from GTFS...");
         var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename);
         await Console.Out.WriteLineAsync($"Done, {routeData.Count} routes loaded");
 
         var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
-        
+
         await Console.Out.WriteLineAsync("Loading stop data from Wikidata...");
         var stopsInWikidata = await FindStopsAtWikidata();
         await Console.Out.WriteLineAsync($"Done, {stopsInWikidata.Count} stops loaded");
@@ -73,19 +74,64 @@ public class ImportPragueTramStops
         // P5817 Q55654238 (?)
     }
 
-    private static Dictionary<string, HashSet<string>> ComputeNeighbors(Dictionary<string, List<string>> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stops)
+    private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<string, GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
     {
-        var result = new Dictionary<string, HashSet<string>>(stops.Count);
+        // first, for each route, record the neighboring stations with the set of route positions
+        var neighbors = new Dictionary<string, Dictionary<string, HashSet<PositionInGtfsRoute>>>(stopData.Count);
         foreach (var route in routes.Values)
         {
-            
+            var routeStops = route.Stops;
+            var routeLength = routeStops.Count;
+            var currentStopGtfs = routeStops[0];
+            for (var routePos = 1; routePos < routeLength; ++routePos)
+            {
+                var nextStopGtfs = routeStops[routePos];
+
+                var currentStopName = stopPerGtfsId[currentStopGtfs];
+                if (!neighbors.TryGetValue(currentStopName, out var currentStopData)) neighbors.Add(currentStopName, currentStopData = new Dictionary<string, HashSet<PositionInGtfsRoute>>(5));
+
+                if (!currentStopData.TryGetValue(nextStopGtfs, out var neighborStopData)) currentStopData.Add(nextStopGtfs, neighborStopData = new HashSet<PositionInGtfsRoute>(5));
+                neighborStopData.Add(new PositionInGtfsRoute(route, routePos));
+
+                currentStopGtfs = nextStopGtfs;
+            }
         }
+
+        // now from that result, compute for each stop its neighbors with the furthest common destination
+        var result = new Dictionary<string, HashSet<(string, string)>>(neighbors.Count);
+        foreach (var (stopName, stopRoutes) in neighbors)
+        {
+            var stopNeighbors = new HashSet<(string, string)>(stopRoutes.Count);
+            result.Add(stopName, stopNeighbors);
+
+            foreach (var (neighborGtfs, neighborRoutes) in stopRoutes)
+            {
+                var neighborStopName = stopPerGtfsId[neighborGtfs];
+                var minRemainingRouteLength = neighborRoutes.Min(route => route.GtfsRoute.Stops.Count - route.Position);
+
+                string? lastCommonName = null;
+                for (var commonOffset = 0; commonOffset < minRemainingRouteLength; ++commonOffset)
+                {
+                    var firstRoute = neighborRoutes.First();
+                    var firstStopName = stopPerGtfsId[firstRoute.GtfsRoute.Stops[firstRoute.Position + commonOffset]];
+                    var isCommon = neighborRoutes.All(route =>
+                        stopPerGtfsId[route.GtfsRoute.Stops[route.Position + commonOffset]] == firstStopName
+                    );
+                    if (isCommon) lastCommonName = firstStopName;
+                    else break;
+                }
+
+                Debug.Assert(lastCommonName != null);
+
+                stopNeighbors.Add((neighborStopName, lastCommonName));
+            }
+        }
+
         return result;
     }
 
-    private static async Task<(DateOnly gtfsFileDate, Dictionary<string, List<string>> routeData)> LoadGtfsRoutes(string zipFilename)
+    private static async Task<(DateOnly gtfsFileDate, Dictionary<string, GtfsRoute> routeData)> LoadGtfsRoutes(string zipFilename)
     {
-        throw new NotImplementedException();
     }
 
     private static async Task<Dictionary<string, string>> FindStopsAtWikidata()
@@ -365,4 +411,8 @@ SELECT ?item ?name WHERE {
     private record StopData(string Name, string IdosName, string FullName, string UniqueName, long Number, long Node, decimal Lat, decimal Lon, HashSet<string> GtfsIds, HashSet<LineAtStop> Lines);
 
     private record struct LineAtStop(string LineName, string Direction);
+
+    private record GtfsRoute(List<String> Stops);
+
+    private record struct PositionInGtfsRoute(GtfsRoute GtfsRoute, int Position);
 }
