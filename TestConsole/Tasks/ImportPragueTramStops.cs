@@ -37,7 +37,7 @@ public class ImportPragueTramStops
         var stopPerGtfsId = new Dictionary<string, string>(stopsData.Values.SelectMany(stop => stop.GtfsIds.Select(id => new KeyValuePair<string, string>(id, stop.Name))));
 
         Console.WriteLine("Loading route data from GTFS...");
-        var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename);
+        var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename, stopPerGtfsId);
         Console.WriteLine($"Done, {routeData.Count} routes loaded");
 
         var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
@@ -133,7 +133,7 @@ public class ImportPragueTramStops
         return result;
     }
 
-    private static async Task<(DateOnly gtfsFileDate, Dictionary<(string, string), GtfsRoute> routeData)> LoadGtfsRoutes(string zipFilename)
+    private static async Task<(DateOnly gtfsFileDate, Dictionary<(string, string), GtfsRoute> routeData)> LoadGtfsRoutes(string zipFilename, Dictionary<string, string> knownGtfsIds)
     {
         await using var stream = new FileStream(zipFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
@@ -162,7 +162,12 @@ public class ImportPragueTramStops
                 currentRouteStops = new List<string>();
                 result.Add((route, direction), new GtfsRoute(currentRouteStops));
                 currentRoute = route;
-                direction = currentDirection;
+                currentDirection = direction;
+            }
+            if (!knownGtfsIds.ContainsKey(stop))
+            {
+                // contains non-relevant stops, remove route
+                result.Remove((currentRoute, currentDirection));
             }
             currentRouteStops.Add(stop);
             if (sequence != currentRouteStops.Count) throw new FormatException($"Unexpected sequence at {route}/{direction}/{sequence}");
