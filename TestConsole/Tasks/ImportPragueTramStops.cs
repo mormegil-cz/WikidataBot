@@ -30,21 +30,21 @@ public class ImportPragueTramStops
 
     public static async Task Run(WikiSite wikidataSite)
     {
-        await Console.Out.WriteLineAsync("Loading stop data from JSON...");
-        var (jsonFileDate, stopsData) = await LoadStops(jsonFilename);
-        await Console.Out.WriteLineAsync($"Done, {stopsData.Count} stops loaded");
+        Console.WriteLine("Loading stop data from JSON...");
+        var (jsonFileDate, stopsData) = LoadStops(jsonFilename);
+        Console.WriteLine($"Done, {stopsData.Count} stops loaded");
 
         var stopPerGtfsId = new Dictionary<string, string>(stopsData.Values.SelectMany(stop => stop.GtfsIds.Select(id => new KeyValuePair<string, string>(id, stop.Name))));
 
-        await Console.Out.WriteLineAsync("Loading route data from GTFS...");
+        Console.WriteLine("Loading route data from GTFS...");
         var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename);
-        await Console.Out.WriteLineAsync($"Done, {routeData.Count} routes loaded");
+        Console.WriteLine($"Done, {routeData.Count} routes loaded");
 
         var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
 
-        await Console.Out.WriteLineAsync("Loading stop data from Wikidata...");
+        Console.WriteLine("Loading stop data from Wikidata...");
         var stopsInWikidata = await FindStopsAtWikidata();
-        await Console.Out.WriteLineAsync($"Done, {stopsInWikidata.Count} stops loaded");
+        Console.WriteLine($"Done, {stopsInWikidata.Count} stops loaded");
 
         var jsonNameSet = stopsData.Keys.ToHashSet();
         var wikidataNameSet = stopsInWikidata.Keys.ToHashSet();
@@ -161,6 +161,8 @@ public class ImportPragueTramStops
             {
                 currentRouteStops = new List<string>();
                 result.Add((route, direction), new GtfsRoute(currentRouteStops));
+                currentRoute = route;
+                direction = currentDirection;
             }
             currentRouteStops.Add(stop);
             if (sequence != currentRouteStops.Count) throw new FormatException($"Unexpected sequence at {route}/{direction}/{sequence}");
@@ -180,31 +182,31 @@ SELECT ?item ?name WHERE {
         return stops;
     }
 
-    private static async Task<(DateOnly, Dictionary<string, StopData>)> LoadStops(string filename)
+    private static (DateOnly, Dictionary<string, StopData>) LoadStops(string filename)
     {
         using var reader = File.OpenText(filename);
-        await using var jsonReader = new JsonTextReader(reader);
+        using var jsonReader = new JsonTextReader(reader);
 
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartObject) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartObject) throw new FormatException("Invalid JSON data");
 
         DateOnly? generatedAt = null;
         Dictionary<string, StopData>? stops = null;
 
-        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.PropertyName)
+        while (jsonReader.Read() && jsonReader.TokenType == JsonToken.PropertyName)
         {
             switch (jsonReader.Value)
             {
                 case "generatedAt":
-                    generatedAt = await ReadDateValue(jsonReader);
+                    generatedAt = ReadDateValue(jsonReader);
                     break;
 
                 case "dataFormatVersion":
-                    var version = await ReadStringValue(jsonReader);
+                    var version = ReadStringValue(jsonReader);
                     if (version != "3") throw new FormatException("Unsupported version " + version);
                     break;
 
                 case "stopGroups":
-                    stops = await ReadTramStopGroups(jsonReader);
+                    stops = ReadTramStopGroups(jsonReader);
                     break;
 
                 default:
@@ -219,51 +221,51 @@ SELECT ?item ?name WHERE {
         return (generatedAt.GetValueOrDefault(), stops);
     }
 
-    private static async Task<long> ReadIntegerValue(JsonTextReader jsonReader)
+    private static long ReadIntegerValue(JsonTextReader jsonReader)
     {
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.Integer) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.Integer) throw new FormatException("Invalid JSON data");
         return (long) jsonReader.Value!;
     }
 
-    private static async Task<decimal> ReadDecimalValue(JsonTextReader jsonReader)
+    private static decimal ReadDecimalValue(JsonTextReader jsonReader)
     {
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.Float) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.Float) throw new FormatException("Invalid JSON data");
         return (decimal) (double) jsonReader.Value!;
     }
 
-    private static async Task<string> ReadStringValue(JsonTextReader jsonReader)
+    private static string ReadStringValue(JsonTextReader jsonReader)
     {
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.String) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.String) throw new FormatException("Invalid JSON data");
         return (string) jsonReader.Value!;
     }
 
-    private static async Task<DateOnly> ReadDateValue(JsonTextReader jsonReader)
+    private static DateOnly ReadDateValue(JsonTextReader jsonReader)
     {
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.Date) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.Date) throw new FormatException("Invalid JSON data");
         var dateTime = (DateTime) jsonReader.Value!;
         return new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
     }
 
-    private static async Task<HashSet<string>> ReadStringSet(JsonTextReader jsonReader)
+    private static HashSet<string> ReadStringSet(JsonTextReader jsonReader)
     {
         var result = new HashSet<string>();
 
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
-        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.String)
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
+        while (jsonReader.Read() && jsonReader.TokenType == JsonToken.String)
         {
-            if (!result.Add((string) jsonReader.Value!)) throw new ArgumentException("Item already exists");
+            if (!result.Add((string) jsonReader.Value!)) throw new ArgumentException("Duplicate item in set");
         }
         if (jsonReader.TokenType != JsonToken.EndArray) throw new FormatException("Invalid JSON data");
 
         return result;
     }
 
-    private static async Task<Dictionary<string, StopData>> ReadTramStopGroups(JsonTextReader jsonReader)
+    private static Dictionary<string, StopData> ReadTramStopGroups(JsonTextReader jsonReader)
     {
         var result = new Dictionary<string, StopData>();
 
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
-        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.StartObject)
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
+        while (jsonReader.Read() && jsonReader.TokenType == JsonToken.StartObject)
         {
             string? name = null;
             string? districtCode = null;
@@ -279,36 +281,36 @@ SELECT ?item ?name WHERE {
             HashSet<string>? gtfsIds = null;
             bool? noTramStops = null;
 
-            while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.PropertyName)
+            while (jsonReader.Read() && jsonReader.TokenType == JsonToken.PropertyName)
             {
                 switch (jsonReader.Value)
                 {
                     case "name":
-                        name = await ReadStringValue(jsonReader);
+                        name = ReadStringValue(jsonReader);
                         break;
                     case "districtCode":
-                        districtCode = await ReadStringValue(jsonReader);
+                        districtCode = ReadStringValue(jsonReader);
                         break;
                     case "idosName":
-                        idosName = await ReadStringValue(jsonReader);
+                        idosName = ReadStringValue(jsonReader);
                         break;
                     case "fullName":
-                        fullName = await ReadStringValue(jsonReader);
+                        fullName = ReadStringValue(jsonReader);
                         break;
                     case "uniqueName":
-                        uniqueName = await ReadStringValue(jsonReader);
+                        uniqueName = ReadStringValue(jsonReader);
                         break;
                     case "node":
-                        node = await ReadIntegerValue(jsonReader);
+                        node = ReadIntegerValue(jsonReader);
                         break;
                     case "cis":
-                        number = await ReadIntegerValue(jsonReader);
+                        number = ReadIntegerValue(jsonReader);
                         break;
                     case "municipality":
-                        municipality = await ReadStringValue(jsonReader);
+                        municipality = ReadStringValue(jsonReader);
                         break;
                     case "stops":
-                        var stopsInGroup = await ReadTramStopsInGroup(jsonReader);
+                        var stopsInGroup = ReadTramStopsInGroup(jsonReader);
                         noTramStops = stopsInGroup == null;
                         if (stopsInGroup != null)
                         {
@@ -318,7 +320,7 @@ SELECT ?item ?name WHERE {
                         }
                         break;
                     default:
-                        await jsonReader.SkipAsync();
+                        jsonReader.Skip();
                         break;
                 }
             }
@@ -334,7 +336,7 @@ SELECT ?item ?name WHERE {
             if (municipality != "Praha") throw new FormatException("Unexpected tram municipality " + municipality);
             if (districtCode != "AB") throw new FormatException("Unexpected tram district code " + districtCode);
 
-            if (name != uniqueName) await Console.Out.WriteLineAsync($"Warning: Tram station name mismatch: {name} vs {uniqueName}");
+            if (name != uniqueName) Console.Error.WriteLine($"Warning: Tram station name mismatch: {name} vs {uniqueName}");
 
             result.Add(name, new StopData(name, idosName, fullName, uniqueName, number.GetValueOrDefault(), node.GetValueOrDefault(), lat.GetValueOrDefault(), lon.GetValueOrDefault(), gtfsIds, lines!));
         }
@@ -343,7 +345,7 @@ SELECT ?item ?name WHERE {
         return result;
     }
 
-    private static async Task<(decimal, decimal, HashSet<LineAtStop>, HashSet<string>)?> ReadTramStopsInGroup(JsonTextReader jsonReader)
+    private static (decimal, decimal, HashSet<LineAtStop>, HashSet<string>)? ReadTramStopsInGroup(JsonTextReader jsonReader)
     {
         var stopCount = 0;
         var sumLat = 0.0m;
@@ -351,35 +353,35 @@ SELECT ?item ?name WHERE {
         var linesInGroup = new HashSet<LineAtStop>();
         var gtfsIds = new HashSet<string>();
 
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
 
-        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.StartObject)
+        while (jsonReader.Read() && jsonReader.TokenType == JsonToken.StartObject)
         {
             decimal? lat = null;
             decimal? lon = null;
             HashSet<LineAtStop>? lines = null;
             bool? hasTramLine = null;
 
-            while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.PropertyName)
+            while (jsonReader.Read() && jsonReader.TokenType == JsonToken.PropertyName)
             {
                 switch (jsonReader.Value)
                 {
                     case "lat":
-                        lat = await ReadDecimalValue(jsonReader);
+                        lat = ReadDecimalValue(jsonReader);
                         break;
                     case "lon":
-                        lon = await ReadDecimalValue(jsonReader);
+                        lon = ReadDecimalValue(jsonReader);
                         break;
                     case "lines":
-                        lines = await ReadTramLinesAtStop(jsonReader);
+                        lines = ReadTramLinesAtStop(jsonReader);
                         hasTramLine = lines != null;
                         break;
                     case "gtfsIds":
-                        var stopGtfsIds = await ReadStringSet(jsonReader);
+                        var stopGtfsIds = ReadStringSet(jsonReader);
                         gtfsIds.UnionWith(stopGtfsIds);
                         break;
                     default:
-                        await jsonReader.SkipAsync();
+                        jsonReader.Skip();
                         break;
                 }
             }
@@ -401,40 +403,40 @@ SELECT ?item ?name WHERE {
         return stopCount == 0 ? null : (sumLat / stopCount, sumLon / stopCount, linesInGroup, gtfsIds);
     }
 
-    private static async Task<HashSet<LineAtStop>?> ReadTramLinesAtStop(JsonTextReader jsonReader)
+    private static HashSet<LineAtStop>? ReadTramLinesAtStop(JsonTextReader jsonReader)
     {
         var result = new HashSet<LineAtStop>();
 
-        if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
+        if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
 
-        while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.StartObject)
+        while (jsonReader.Read() && jsonReader.TokenType == JsonToken.StartObject)
         {
             string? name = null;
             string? type = null;
             string? direction = null;
             string? direction2 = null;
 
-            while (await jsonReader.ReadAsync() && jsonReader.TokenType == JsonToken.PropertyName)
+            while (jsonReader.Read() && jsonReader.TokenType == JsonToken.PropertyName)
             {
                 switch (jsonReader.Value)
                 {
                     case "id":
-                        await ReadIntegerValue(jsonReader);
+                        ReadIntegerValue(jsonReader);
                         break;
                     case "name":
-                        name = await ReadStringValue(jsonReader);
+                        name = ReadStringValue(jsonReader);
                         break;
                     case "type":
-                        type = await ReadStringValue(jsonReader);
+                        type = ReadStringValue(jsonReader);
                         break;
                     case "direction":
-                        direction = await ReadStringValue(jsonReader);
+                        direction = ReadStringValue(jsonReader);
                         break;
                     case "direction2":
-                        direction2 = await ReadStringValue(jsonReader);
+                        direction2 = ReadStringValue(jsonReader);
                         break;
                     case "isNight":
-                        await jsonReader.SkipAsync();
+                        jsonReader.Skip();
                         break;
                     default:
                         throw new FormatException("Unsupported property " + jsonReader.Value);
