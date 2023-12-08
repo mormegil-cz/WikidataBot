@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using WikiClientLibrary.Sites;
@@ -74,7 +77,7 @@ public class ImportPragueTramStops
         // P5817 Q55654238 (?)
     }
 
-    private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<string, GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
+    private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<(string, string), GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
     {
         // first, for each route, record the neighboring stations with the set of route positions
         var neighbors = new Dictionary<string, Dictionary<string, HashSet<PositionInGtfsRoute>>>(stopData.Count);
@@ -130,8 +133,39 @@ public class ImportPragueTramStops
         return result;
     }
 
-    private static async Task<(DateOnly gtfsFileDate, Dictionary<string, GtfsRoute> routeData)> LoadGtfsRoutes(string zipFilename)
+    private static async Task<(DateOnly gtfsFileDate, Dictionary<(string, string), GtfsRoute> routeData)> LoadGtfsRoutes(string zipFilename)
     {
+        await using var stream = new FileStream(zipFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        var zipArchiveEntry = zipArchive.GetEntry("route_stops.txt") ?? throw new FormatException("Invalid GTFS data");
+        await using var entryStream = zipArchiveEntry.Open();
+        using var reader = new StreamReader(entryStream, Encoding.UTF8);
+
+        if (await reader.ReadLineAsync() != "route_id,direction_id,stop_id,stop_sequence") throw new FormatException("Unexpected GTFS format");
+
+        var result = new Dictionary<(string, string), GtfsRoute>();
+        string? line;
+        List<string> currentRouteStops = new List<string>();
+        string currentRoute = "";
+        string currentDirection = "";
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            // L991,1,U703Z101P,8
+            var parts = line.Split(',');
+            var route = parts[0];
+            var direction = parts[1];
+            var stop = parts[2];
+            var sequence = Int32.Parse(parts[3], CultureInfo.InvariantCulture);
+            if (route != currentRoute || direction != currentDirection)
+            {
+                currentRouteStops = new List<string>();
+                result.Add((route, direction), new GtfsRoute(currentRouteStops));
+            }
+            currentRouteStops.Add(stop);
+            if (sequence != currentRouteStops.Count) throw new FormatException($"Unexpected sequence at {route}/{direction}/{sequence}");
+        }
+        return (ToDateOnly(zipArchiveEntry.LastWriteTime), result);
     }
 
     private static async Task<Dictionary<string, string>> FindStopsAtWikidata()
@@ -273,13 +307,15 @@ SELECT ?item ?name WHERE {
                     case "municipality":
                         municipality = await ReadStringValue(jsonReader);
                         break;
-                    case "gtfsIds":
-                        gtfsIds = await ReadStringSet(jsonReader);
-                        break;
                     case "stops":
                         var stopsInGroup = await ReadTramStopsInGroup(jsonReader);
                         noTramStops = stopsInGroup == null;
-                        if (stopsInGroup != null) (lat, lon, lines) = stopsInGroup.GetValueOrDefault();
+                        if (stopsInGroup != null)
+                        {
+                            (lat, lon, lines, var stopGtfsIds) = stopsInGroup.GetValueOrDefault();
+                            gtfsIds ??= new HashSet<string>();
+                            gtfsIds.UnionWith(stopGtfsIds);
+                        }
                         break;
                     default:
                         await jsonReader.SkipAsync();
@@ -289,10 +325,12 @@ SELECT ?item ?name WHERE {
 
             if (jsonReader.TokenType != JsonToken.EndObject) throw new FormatException("Invalid JSON data");
 
-            if (name == null || districtCode == null || idosName == null || fullName == null || uniqueName == null || node == null || number == null || municipality == null || gtfsIds == null || noTramStops == null) throw new FormatException("Incomplete JSON data");
+            if (name == null || districtCode == null || idosName == null || fullName == null || uniqueName == null || node == null || number == null || municipality == null || noTramStops == null) throw new FormatException("Incomplete JSON data");
 
             if (noTramStops.GetValueOrDefault()) continue;
 
+            if (gtfsIds == null) throw new FormatException("Incomplete JSON data");
+            
             if (municipality != "Praha") throw new FormatException("Unexpected tram municipality " + municipality);
             if (districtCode != "AB") throw new FormatException("Unexpected tram district code " + districtCode);
 
@@ -305,12 +343,13 @@ SELECT ?item ?name WHERE {
         return result;
     }
 
-    private static async Task<(decimal, decimal, HashSet<LineAtStop>)?> ReadTramStopsInGroup(JsonTextReader jsonReader)
+    private static async Task<(decimal, decimal, HashSet<LineAtStop>, HashSet<string>)?> ReadTramStopsInGroup(JsonTextReader jsonReader)
     {
         var stopCount = 0;
         var sumLat = 0.0m;
         var sumLon = 0.0m;
         var linesInGroup = new HashSet<LineAtStop>();
+        var gtfsIds = new HashSet<string>();
 
         if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartArray) throw new FormatException("Invalid JSON data");
 
@@ -335,6 +374,10 @@ SELECT ?item ?name WHERE {
                         lines = await ReadTramLinesAtStop(jsonReader);
                         hasTramLine = lines != null;
                         break;
+                    case "gtfsIds":
+                        var stopGtfsIds = await ReadStringSet(jsonReader);
+                        gtfsIds.UnionWith(stopGtfsIds);
+                        break;
                     default:
                         await jsonReader.SkipAsync();
                         break;
@@ -355,7 +398,7 @@ SELECT ?item ?name WHERE {
             }
         }
 
-        return stopCount == 0 ? null : (sumLat / stopCount, sumLon / stopCount, linesInGroup);
+        return stopCount == 0 ? null : (sumLat / stopCount, sumLon / stopCount, linesInGroup, gtfsIds);
     }
 
     private static async Task<HashSet<LineAtStop>?> ReadTramLinesAtStop(JsonTextReader jsonReader)
@@ -406,6 +449,12 @@ SELECT ?item ?name WHERE {
         }
 
         return result.Count == 0 ? null : result;
+    }
+
+    private static DateOnly ToDateOnly(DateTimeOffset dateTimeOffset)
+    {
+        var utc = dateTimeOffset.UtcDateTime;
+        return new DateOnly(utc.Year, utc.Month, utc.Day);
     }
 
     private record StopData(string Name, string IdosName, string FullName, string UniqueName, long Number, long Node, decimal Lat, decimal Lon, HashSet<string> GtfsIds, HashSet<LineAtStop> Lines);
