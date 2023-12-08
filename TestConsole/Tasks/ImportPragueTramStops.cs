@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -100,6 +99,8 @@ public class ImportPragueTramStops
             }
         }
 
+        // TODO: move GTFS->name conversion lower, so that we can distinguish stops on different ends of a junction
+
         // now from that result, compute for each stop its neighbors
         var neighbors = new Dictionary<string, HashSet<string>>(
             routesPerStop
@@ -148,6 +149,8 @@ public class ImportPragueTramStops
         await using var stream = new FileStream(zipFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
 
+        var tramRoutes = await LoadTramGtfsRoutes(zipArchive);
+
         var zipArchiveEntry = zipArchive.GetEntry("route_stops.txt") ?? throw new FormatException("Invalid GTFS data");
         await using var entryStream = zipArchiveEntry.Open();
         using var reader = new StreamReader(entryStream, Encoding.UTF8);
@@ -161,9 +164,13 @@ public class ImportPragueTramStops
         string currentDirection = "";
         while ((line = await reader.ReadLineAsync()) != null)
         {
-            // L991,1,U703Z101P,8
             var parts = line.Split(',');
             var route = parts[0];
+            if (!tramRoutes.Contains(route))
+            {
+                // ignore non-tram routes
+                continue;
+            }
             var direction = parts[1];
             var stop = parts[2];
             var sequence = Int32.Parse(parts[3], CultureInfo.InvariantCulture);
@@ -183,6 +190,26 @@ public class ImportPragueTramStops
             if (sequence != currentRouteStops.Count) throw new FormatException($"Unexpected sequence at {route}/{direction}/{sequence}");
         }
         return (ToDateOnly(zipArchiveEntry.LastWriteTime), result);
+    }
+
+    private static async Task<HashSet<string>> LoadTramGtfsRoutes(ZipArchive zipArchive)
+    {
+        var zipArchiveEntry = zipArchive.GetEntry("routes.txt") ?? throw new FormatException("Invalid GTFS data");
+        await using var entryStream = zipArchiveEntry.Open();
+        using var reader = new StreamReader(entryStream, Encoding.UTF8);
+
+        var result = new HashSet<string>();
+        if (await reader.ReadLineAsync() != "route_id,agency_id,route_short_name,route_long_name,route_type,route_url,route_color,route_text_color,is_night,is_regional,is_substitute_transport") throw new FormatException("Unexpected GTFS format");
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            var parts = line.Split(',');
+            var route = parts[0];
+            var type = parts[4];
+            // 0=tram, 1=metro, 2=train, 3=bus
+            if (type == "0") result.Add(route);
+        }
+        return result;
     }
 
     private static async Task<Dictionary<string, string>> FindStopsAtWikidata()
