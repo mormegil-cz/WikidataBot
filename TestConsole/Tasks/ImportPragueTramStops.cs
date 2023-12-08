@@ -110,14 +110,17 @@ public class ImportPragueTramStops
             foreach (var (neighborGtfs, neighborRoutes) in stopRoutes)
             {
                 var neighborStopName = stopPerGtfsId[neighborGtfs];
-                var minRemainingRouteLength = neighborRoutes.Min(route => route.GtfsRoute.Stops.Count - route.Position);
+                var maxRemainingRouteLength = neighborRoutes.Max(route => route.GtfsRoute.Stops.Count - route.Position);
 
                 string? lastCommonName = null;
-                for (var commonOffset = 0; commonOffset < minRemainingRouteLength; ++commonOffset)
+                for (var commonOffset = 0; commonOffset < maxRemainingRouteLength; ++commonOffset)
                 {
-                    var firstRoute = neighborRoutes.First();
+                    var firstRoute = neighborRoutes.FirstOrDefault(r => r.GtfsRoute.Stops.Count > r.Position + commonOffset);
+                    if (firstRoute.GtfsRoute == null) break;
+
                     var firstStopName = stopPerGtfsId[firstRoute.GtfsRoute.Stops[firstRoute.Position + commonOffset]];
                     var isCommon = neighborRoutes.All(route =>
+                        route.GtfsRoute.Stops.Count <= route.Position + commonOffset ||
                         stopPerGtfsId[route.GtfsRoute.Stops[route.Position + commonOffset]] == firstStopName
                     );
                     if (isCommon) lastCommonName = firstStopName;
@@ -337,7 +340,7 @@ SELECT ?item ?name WHERE {
             if (noTramStops.GetValueOrDefault()) continue;
 
             if (gtfsIds == null) throw new FormatException("Incomplete JSON data");
-            
+
             if (municipality != "Praha") throw new FormatException("Unexpected tram municipality " + municipality);
             if (districtCode != "AB") throw new FormatException("Unexpected tram district code " + districtCode);
 
