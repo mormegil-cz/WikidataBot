@@ -80,7 +80,7 @@ public class ImportPragueTramStops
     private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<(string, string), GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
     {
         // first, for each route, record the neighboring stations with the set of route positions
-        var neighbors = new Dictionary<string, Dictionary<string, HashSet<PositionInGtfsRoute>>>(stopData.Count);
+        var routesPerStop = new Dictionary<string, Dictionary<string, HashSet<PositionInGtfsRoute>>>(stopData.Count);
         foreach (var route in routes.Values)
         {
             var routeStops = route.Stops;
@@ -91,7 +91,7 @@ public class ImportPragueTramStops
                 var nextStopGtfs = routeStops[routePos];
 
                 var currentStopName = stopPerGtfsId[currentStopGtfs];
-                if (!neighbors.TryGetValue(currentStopName, out var currentStopData)) neighbors.Add(currentStopName, currentStopData = new Dictionary<string, HashSet<PositionInGtfsRoute>>(5));
+                if (!routesPerStop.TryGetValue(currentStopName, out var currentStopData)) routesPerStop.Add(currentStopName, currentStopData = new Dictionary<string, HashSet<PositionInGtfsRoute>>(5));
 
                 if (!currentStopData.TryGetValue(nextStopGtfs, out var neighborStopData)) currentStopData.Add(nextStopGtfs, neighborStopData = new HashSet<PositionInGtfsRoute>(5));
                 neighborStopData.Add(new PositionInGtfsRoute(route, routePos));
@@ -100,39 +100,46 @@ public class ImportPragueTramStops
             }
         }
 
-        // now from that result, compute for each stop its neighbors with the furthest common destination
+        // now from that result, compute for each stop its neighbors
+        var neighbors = new Dictionary<string, HashSet<string>>(
+            routesPerStop
+                .Select(entry => new KeyValuePair<string, HashSet<string>>(
+                    entry.Key,
+                    entry.Value.Keys.Select(gtfs => stopPerGtfsId[gtfs]).ToHashSet()
+                ))
+        );
+
+        // now from that result, compute for each stop and its neighbor the furthest common destination
         var result = new Dictionary<string, HashSet<(string, string)>>(neighbors.Count);
-        foreach (var (stopName, stopRoutes) in neighbors)
+        foreach (var (stopName, stopNeighbors) in neighbors)
         {
-            var stopNeighbors = new HashSet<(string, string)>(stopRoutes.Count);
-            result.Add(stopName, stopNeighbors);
+            var resultSet = new HashSet<(string, string)>(stopNeighbors.Count);
+            result.Add(stopName, resultSet);
 
-            foreach (var (neighborGtfs, neighborRoutes) in stopRoutes)
+            foreach (var neighbor in stopNeighbors)
             {
-                var neighborStopName = stopPerGtfsId[neighborGtfs];
-                var maxRemainingRouteLength = neighborRoutes.Max(route => route.GtfsRoute.Stops.Count - route.Position);
-
-                string? lastCommonName = null;
-                for (var commonOffset = 0; commonOffset < maxRemainingRouteLength; ++commonOffset)
+                if (neighbor == stopName)
                 {
-                    var firstRoute = neighborRoutes.FirstOrDefault(r => r.GtfsRoute.Stops.Count > r.Position + commonOffset);
-                    if (firstRoute.GtfsRoute == null) break;
-
-                    var firstStopName = stopPerGtfsId[firstRoute.GtfsRoute.Stops[firstRoute.Position + commonOffset]];
-                    var isCommon = neighborRoutes.All(route =>
-                        route.GtfsRoute.Stops.Count <= route.Position + commonOffset ||
-                        stopPerGtfsId[route.GtfsRoute.Stops[route.Position + commonOffset]] == firstStopName
-                    );
-                    if (isCommon) lastCommonName = firstStopName;
-                    else break;
+                    Console.Error.WriteLine("Note: Multi-stop in one route at " + neighbor);
+                    continue;
                 }
 
-                Debug.Assert(lastCommonName != null);
-
-                stopNeighbors.Add((neighborStopName, lastCommonName));
+                var comingFrom = stopName;
+                var curr = neighbor;
+                var comingFromNeighbors = stopNeighbors;
+                while (true)
+                {
+                    var currNeighbors = neighbors[curr];
+                    var possibleNext = currNeighbors.Where(n => n != comingFrom && !comingFromNeighbors.Contains(n)).ToHashSet();
+                    if (possibleNext.Count != 1) break;
+                    var next = possibleNext.Single();
+                    comingFrom = curr;
+                    comingFromNeighbors = currNeighbors;
+                    curr = next;
+                }
+                resultSet.Add((neighbor, curr));
             }
         }
-
         return result;
     }
 
@@ -344,7 +351,7 @@ SELECT ?item ?name WHERE {
             if (municipality != "Praha") throw new FormatException("Unexpected tram municipality " + municipality);
             if (districtCode != "AB") throw new FormatException("Unexpected tram district code " + districtCode);
 
-            if (name != uniqueName) Console.Error.WriteLine($"Warning: Tram station name mismatch: {name} vs {uniqueName}");
+            if (name != uniqueName) Console.Error.WriteLine($"Note: Tram station name mismatch: {name} vs {uniqueName}");
 
             result.Add(name, new StopData(name, idosName, fullName, uniqueName, number.GetValueOrDefault(), node.GetValueOrDefault(), lat.GetValueOrDefault(), lon.GetValueOrDefault(), gtfsIds, lines!));
         }
