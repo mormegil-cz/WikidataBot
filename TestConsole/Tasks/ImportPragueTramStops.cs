@@ -20,11 +20,11 @@ public class ImportPragueTramStops
     private static readonly string[] Languages = { };
 
     // http://data.pid.cz/PID_GTFS.zip
-    private static readonly DateOnly gtfsDownloadDate = new DateOnly(2023, 12, 5);
+    private static readonly DateOnly gtfsDownloadDate = new(2023, 12, 5);
     private static readonly string gtfsFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "PID_GTFS.zip");
 
     // https://data.pid.cz/stops/json/stops.json
-    private static readonly DateOnly jsonDownloadDate = new DateOnly(2023, 12, 5);
+    private static readonly DateOnly jsonDownloadDate = new(2023, 12, 5);
     private static readonly string jsonFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "stops.json");
 
     public static async Task Run(WikiSite wikidataSite)
@@ -78,8 +78,8 @@ public class ImportPragueTramStops
 
     private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<(string, string), GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
     {
-        // first, for each route, record the neighboring stations with the set of route positions
-        var routesPerStop = new Dictionary<string, Dictionary<string, HashSet<PositionInGtfsRoute>>>(stopData.Count);
+        // first, for each route, record the set of neighboring GTFS stops
+        var gtfsNeighbors = new Dictionary<string, HashSet<string>>(stopData.Count);
         foreach (var route in routes.Values)
         {
             var routeStops = route.Stops;
@@ -89,56 +89,52 @@ public class ImportPragueTramStops
             {
                 var nextStopGtfs = routeStops[routePos];
 
-                var currentStopName = stopPerGtfsId[currentStopGtfs];
-                if (!routesPerStop.TryGetValue(currentStopName, out var currentStopData)) routesPerStop.Add(currentStopName, currentStopData = new Dictionary<string, HashSet<PositionInGtfsRoute>>(5));
-
-                if (!currentStopData.TryGetValue(nextStopGtfs, out var neighborStopData)) currentStopData.Add(nextStopGtfs, neighborStopData = new HashSet<PositionInGtfsRoute>(5));
-                neighborStopData.Add(new PositionInGtfsRoute(route, routePos));
+                if (!gtfsNeighbors.TryGetValue(currentStopGtfs, out var currentStopData)) gtfsNeighbors.Add(currentStopGtfs, currentStopData = new HashSet<string>(5));
+                currentStopData.Add(nextStopGtfs);
 
                 currentStopGtfs = nextStopGtfs;
             }
         }
 
-        // TODO: move GTFS->name conversion lower, so that we can distinguish stops on different ends of a junction
-
-        // now from that result, compute for each stop its neighbors
-        var neighbors = new Dictionary<string, HashSet<string>>(
-            routesPerStop
-                .Select(entry => new KeyValuePair<string, HashSet<string>>(
-                    entry.Key,
-                    entry.Value.Keys.Select(gtfs => stopPerGtfsId[gtfs]).ToHashSet()
-                ))
-        );
-
-        // now from that result, compute for each stop and its neighbor the furthest common destination
-        var result = new Dictionary<string, HashSet<(string, string)>>(neighbors.Count);
-        foreach (var (stopName, stopNeighbors) in neighbors)
+        // from that, compute also the aggregated neighbors for each stop name
+        var nameNeighbors = new Dictionary<string, HashSet<string>>();
+        foreach (var (stopGtfsName, stopGtfsNeighbors) in gtfsNeighbors)
         {
-            var resultSet = new HashSet<(string, string)>(stopNeighbors.Count);
-            result.Add(stopName, resultSet);
+            var stopName = stopPerGtfsId[stopGtfsName];
+            if (!nameNeighbors.TryGetValue(stopName, out var stopNameNeighbors)) nameNeighbors.Add(stopName, stopNameNeighbors = new HashSet<string>(5));
+            stopNameNeighbors.UnionWith(stopGtfsNeighbors.Select(n => stopPerGtfsId[n]));
+        }
 
-            foreach (var neighbor in stopNeighbors)
+        // now from those results, compute for each GTFS stop and its neighbor the furthest common destination
+        var result = new Dictionary<string, HashSet<(string, string)>>(gtfsNeighbors.Count);
+        foreach (var (stopGtfsName, stopNeighbors) in gtfsNeighbors)
+        {
+            var stopName = stopPerGtfsId[stopGtfsName];
+            if (!result.TryGetValue(stopName, out var resultSet)) result.Add(stopName, resultSet = new HashSet<(string, string)>(stopNeighbors.Count));
+
+            foreach (var neighborGtfs in stopNeighbors)
             {
-                if (neighbor == stopName)
+                var neighborName = stopPerGtfsId[neighborGtfs];
+                if (neighborName == stopName)
                 {
-                    Console.Error.WriteLine("Note: Multi-stop in one route at " + neighbor);
+                    Console.Error.WriteLine("Note: Multi-stop in one route at " + neighborName);
                     continue;
                 }
 
-                var comingFrom = stopName;
-                var curr = neighbor;
-                var comingFromNeighbors = stopNeighbors;
+                var currName = neighborName;
+                var comingFromName = stopName;
+                var comingFromNeighbors = nameNeighbors[stopName];
                 while (true)
                 {
-                    var currNeighbors = neighbors[curr];
-                    var possibleNext = currNeighbors.Where(n => n != comingFrom && !comingFromNeighbors.Contains(n)).ToHashSet();
+                    var currNeighbors = nameNeighbors[currName];
+                    var possibleNext = currNeighbors.Where(n => n != comingFromName && !comingFromNeighbors.Contains(n)).ToHashSet();
                     if (possibleNext.Count != 1) break;
                     var next = possibleNext.Single();
-                    comingFrom = curr;
+                    comingFromName = currName;
                     comingFromNeighbors = currNeighbors;
-                    curr = next;
+                    currName = next;
                 }
-                resultSet.Add((neighbor, curr));
+                resultSet.Add((neighborName, currName));
             }
         }
         return result;
