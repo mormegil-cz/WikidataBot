@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -7,7 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using WikiClientLibrary;
 using WikiClientLibrary.Sites;
+using WikiClientLibrary.Wikibase;
+using WikiClientLibrary.Wikibase.DataTypes;
 
 namespace TestConsole.Tasks;
 
@@ -17,31 +21,50 @@ public class ImportPragueTramStops
 {
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Prague tram stops import", EditGroupId);
-    private static readonly string[] Languages = { };
+    private static readonly string[] Languages = { "cs", "en" };
 
-    // http://data.pid.cz/PID_GTFS.zip
-    private static readonly DateOnly gtfsDownloadDate = new(2023, 12, 5);
+    private const string gtfsUrl = "http://data.pid.cz/PID_GTFS.zip";
+    private static readonly DateOnly gtfsDownloadDate = new(2023, 12, 15);
     private static readonly string gtfsFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "PID_GTFS.zip");
+    private static ClaimReference? referenceGtfs;
 
-    // https://data.pid.cz/stops/json/stops.json
-    private static readonly DateOnly jsonDownloadDate = new(2023, 12, 5);
+    private const string stopsUrl = "https://data.pid.cz/stops/json/stops.json";
+    private static readonly DateOnly jsonDownloadDate = new(2023, 12, 15);
     private static readonly string jsonFilename = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "stops.json");
+    private static ClaimReference? referenceStops;
 
     public static async Task Run(WikiSite wikidataSite)
     {
         Console.WriteLine("Loading stop data from JSON...");
+        // name -> stop data
         var (jsonFileDate, stopsData) = LoadStops(jsonFilename);
         Console.WriteLine($"Done, {stopsData.Count} stops loaded");
+        referenceStops = new ClaimReference(
+            new Snak(WikidataProperties.StatedIn, "Q97095774", BuiltInDataTypes.WikibaseItem),
+            new Snak(WikidataProperties.PublishDate, new WbTime(jsonFileDate.Year, jsonFileDate.Month, jsonFileDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time),
+            new Snak(WikidataProperties.ReferenceUrl, stopsUrl, BuiltInDataTypes.Url),
+            new Snak(WikidataProperties.AccessDate, new WbTime(jsonDownloadDate.Year, jsonDownloadDate.Month, jsonDownloadDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
+        );
 
+        // GTFS ID -> name
         var stopPerGtfsId = new Dictionary<string, string>(stopsData.Values.SelectMany(stop => stop.GtfsIds.Select(id => new KeyValuePair<string, string>(id, stop.Name))));
 
         Console.WriteLine("Loading route data from GTFS...");
+        // (route ID, direction) -> route data
         var (gtfsFileDate, routeData) = await LoadGtfsRoutes(gtfsFilename, stopPerGtfsId);
         Console.WriteLine($"Done, {routeData.Count} routes loaded");
-
+        referenceGtfs = new ClaimReference(
+            new Snak(WikidataProperties.StatedIn, "Q97095774", BuiltInDataTypes.WikibaseItem),
+            new Snak(WikidataProperties.PublishDate, new WbTime(gtfsFileDate.Year, gtfsFileDate.Month, gtfsFileDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time),
+            new Snak(WikidataProperties.ReferenceUrl, gtfsUrl, BuiltInDataTypes.Url),
+            new Snak(WikidataProperties.AccessDate, new WbTime(gtfsDownloadDate.Year, gtfsDownloadDate.Month, gtfsDownloadDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
+        );
+        
+        // name -> set of neighbor names
         var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
 
         Console.WriteLine("Loading stop data from Wikidata...");
+        // name -> QID
         var stopsInWikidata = await FindStopsAtWikidata();
         Console.WriteLine($"Done, {stopsInWikidata.Count} stops loaded");
 
@@ -72,8 +95,204 @@ public class ImportPragueTramStops
         // description.en: Tram stop in Prague
         // aliases.cs: {names}
         // P17 Q213
+        // P131 Q1085 (or more precise?)
         // P625 coords
         // P5817 Q55654238 (?)
+
+        // P197: next stop
+        //  +P5051: direction
+
+        foreach (var (stopName, stopData) in stopsData)
+        {
+            var qid = stopsInWikidata[stopName];
+            var entity = new Entity(wikidataSite, qid);
+            await entity.RefreshAsync(EntityQueryOptions.FetchLabels | EntityQueryOptions.FetchDescriptions | EntityQueryOptions.FetchAliases | EntityQueryOptions.FetchClaims, Languages);
+
+            if (entity.Claims == null)
+            {
+                Console.Error.WriteLine($"WARNING! Unable to read entity {qid}!");
+                continue;
+            }
+
+            var aliases = new HashSet<string>(5) { stopData.Name, stopData.FullName, stopData.IdosName, stopData.IdosName, stopData.UniqueName };
+            aliases.Remove(stopName);
+
+            var edits = new List<EntityEditEntry>();
+
+            CheckLabel(entity, stopName, "cs", edits);
+            CheckLabel(entity, stopName, "en", edits);
+            CheckDescription(entity, "tramvajová zastávka v Praze", "cs", edits);
+            CheckDescription(entity, "tram stop in Prague", "en", edits);
+            CheckAliases(entity, aliases, "cs", edits);
+            CheckAliases(entity, aliases, "en", edits);
+
+            CheckClaim(entity, WikidataProperties.Country, "Q213", edits);
+            CheckClaim(entity, WikidataProperties.LocatedInAdminEntity, "Q1085", edits);
+            CheckClaim(entity, WikidataProperties.UsageState, "Q55654238", edits);
+            CheckCoordClaim(entity, WikidataProperties.Coordinates, (double)stopData.Lat, (double)stopData.Lon, edits);
+            CheckNeighborClaims(entity, neighbors[stopName].Select(x => (stopsInWikidata[x.Item1], stopsInWikidata[x.Item2])).ToHashSet(), edits);
+
+            if (edits.Count > 0)
+            {
+                Console.WriteLine($"{qid} ({stopName}): {edits.Count} edit(s)");
+
+                // if (wikidataSite.AccountInfo.IsAnonymous) throw new InvalidOperationException("Not logged in!");
+                // Console.WriteLine($"Editing {qid}");
+                // await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
+            }
+        }
+    }
+
+    private static void CheckLabel(Entity entity, string stopName, string language, List<EntityEditEntry> edits)
+    {
+        if (entity.Labels.ContainsLanguage(language))
+        {
+            var currentLabel = entity.Labels[language];
+            if (currentLabel != stopName) Console.Error.WriteLine($"Warning: {entity.Id} has {language} label '{currentLabel}' instead of '{stopName}'");
+        }
+        else
+        {
+            edits.Add(new EntityEditEntry(nameof(entity.Labels), new WbMonolingualText(language, stopName)));
+        }
+    }
+
+    private static void CheckDescription(Entity entity, string description, string language, List<EntityEditEntry> edits)
+    {
+        if (entity.Descriptions.ContainsLanguage(language))
+        {
+            var currentDesc = entity.Descriptions[language];
+            if (currentDesc.Replace(' ', ' ') != description.Replace(' ', ' ')) Console.Error.WriteLine($"Note: {entity.Id} has {language} description '{currentDesc}' instead of '{description}'");
+        }
+        else
+        {
+            edits.Add(new EntityEditEntry(nameof(entity.Descriptions), new WbMonolingualText(language, description)));
+        }
+    }
+
+    private static void CheckAliases(Entity entity, ISet<string> aliases, string language, List<EntityEditEntry> edits)
+    {
+        var currentAliases = new HashSet<string>(entity.Aliases[language]);
+
+        var aliasesToAdd = new HashSet<string>(aliases);
+        aliasesToAdd.ExceptWith(currentAliases);
+
+        var extraAliases = new HashSet<string>(currentAliases);
+        extraAliases.ExceptWith(aliases);
+        if (extraAliases.Count > 0)
+        {
+            Console.Error.WriteLine($"Note: {entity.Id} has {extraAliases.Count} extra alias(es): {String.Join(", ", extraAliases)}");
+        }
+
+        if (aliasesToAdd.Count > 0)
+        {
+            edits.Add(new EntityEditEntry(nameof(entity.Aliases), new WbMonolingualTextCollection(aliasesToAdd.Select(a => new WbMonolingualText(language, a)))));
+        }
+    }
+
+    private static void CheckClaim(Entity entity, string property, string value, List<EntityEditEntry> edits)
+    {
+        if (entity.Claims.ContainsKey(property))
+        {
+            var claimValues = entity.Claims[property];
+            if (claimValues.Any(c => value.Equals(c.MainSnak.DataValue)))
+            {
+                if (claimValues.Count > 1) Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count - 1} additional {property} values");
+            }
+            else
+            {
+                if (claimValues.Count == 0) throw new UnexpectedDataException($"Empty {property} claims in {entity.Id}?!");
+                Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count} {property} value(s) but not the expected one");
+            }
+        }
+        else
+        {
+            var addedClaim = new Claim(new Snak(property, value, BuiltInDataTypes.WikibaseItem));
+            addedClaim.References.Add(referenceStops);
+            edits.Add(new EntityEditEntry(nameof(entity.Claims), addedClaim));
+        }
+    }
+
+    private static void CheckCoordClaim(Entity entity, string property, double lat, double lon, List<EntityEditEntry> edits)
+    {
+        if (entity.Claims.ContainsKey(property))
+        {
+            var claimValues = entity.Claims[property];
+            if (claimValues.Count != 1)
+            {
+                Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count} {property} values");
+            }
+            else
+            {
+                var claim = claimValues.Single();
+                var claimValue = (WbGlobeCoordinate) claim.MainSnak.DataValue;
+
+                // heh! :-)
+                var dist = Math.Abs(lat - claimValue.Latitude) + Math.Abs(lon - claimValue.Longitude);
+                if (dist > 0.0007)
+                {
+                    Console.Error.WriteLine($"Warning: {entity.Id} has suspicious coordinates ({lat}, {lon} expected; distance {dist * 40000 / 360.0f:F5})");
+
+                    edits.Add(new EntityEditEntry(nameof(entity.Claims), claim, EntityEditEntryState.Removed));
+                    var addedCoordClaim = new Claim(new Snak(WikidataProperties.Coordinates, new WbGlobeCoordinate(lat, lon, 0.0001, WikidataProperties.GlobeEarth), BuiltInDataTypes.GlobeCoordinate));
+                    addedCoordClaim.References.Add(referenceStops);
+                    edits.Add(new EntityEditEntry(nameof(entity.Claims), addedCoordClaim));
+                }
+            }
+        }
+        else
+        {
+            var addedCoordClaim = new Claim(new Snak(WikidataProperties.Coordinates, new WbGlobeCoordinate(lat, lon, 0.0001, WikidataProperties.GlobeEarth), BuiltInDataTypes.GlobeCoordinate));
+            addedCoordClaim.References.Add(referenceStops);
+            edits.Add(new EntityEditEntry(nameof(entity.Claims), addedCoordClaim));
+        }
+    }
+
+    private static void CheckNeighborClaims(Entity entity, HashSet<(string, string)> neighborQids, List<EntityEditEntry> edits)
+    {
+        var property = WikidataProperties.NeighboringStop;
+        var missingNeighbors = new HashSet<(string, string)>(neighborQids);
+        if (entity.Claims.ContainsKey(property))
+        {
+            var claims = entity.Claims[property];
+            foreach (var claim in claims)
+            {
+                var neighborQid = (string) claim.MainSnak.DataValue;
+                var directionQualifiers = claim.Qualifiers.Where(q => q.PropertyId == WikidataProperties.TerminusDirection).ToList();
+                bool ok;
+                if (directionQualifiers.Count != 1)
+                {
+                    Console.Error.WriteLine($"Warning: ${entity.Id} has {directionQualifiers.Count} qualifiers for neighboring {neighborQid}");
+                    ok = false;
+                }
+                else
+                {
+                    var directionQid = (string)directionQualifiers.Single().DataValue;
+                    var key = (neighborQid, directionQid);
+                    if (neighborQids.Contains(key))
+                    {
+                        ok = true;
+                        missingNeighbors.Remove(key);
+                    }
+                    else
+                    {
+                        ok = false;
+                        Console.Error.WriteLine($"Warning: ${entity.Id} has extra neighboring ({neighborQid}, {directionQid})");
+                    }
+                }
+                if (!ok)
+                {
+                    edits.Add(new EntityEditEntry(nameof(entity.Claims), claim, EntityEditEntryState.Removed));
+                }
+            }
+        }
+
+        foreach (var missingNeighbor in missingNeighbors)
+        {
+            var addedClaim = new Claim(new Snak(WikidataProperties.NeighboringStop, missingNeighbor.Item1, BuiltInDataTypes.WikibaseItem));
+            addedClaim.Qualifiers.Add(new Snak(WikidataProperties.TerminusDirection, missingNeighbor.Item2, BuiltInDataTypes.WikibaseItem));
+            addedClaim.References.Add(referenceGtfs);
+            edits.Add(new EntityEditEntry(nameof(entity.Claims), addedClaim));
+        }
     }
 
     private static Dictionary<string, HashSet<(string, string)>> ComputeNeighbors(Dictionary<(string, string), GtfsRoute> routes, Dictionary<string, string> stopPerGtfsId, Dictionary<string, StopData> stopData)
