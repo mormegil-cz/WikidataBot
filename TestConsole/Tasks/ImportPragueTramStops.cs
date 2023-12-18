@@ -59,7 +59,7 @@ public class ImportPragueTramStops
             new Snak(WikidataProperties.ReferenceUrl, gtfsUrl, BuiltInDataTypes.Url),
             new Snak(WikidataProperties.AccessDate, new WbTime(gtfsDownloadDate.Year, gtfsDownloadDate.Month, gtfsDownloadDate.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar), BuiltInDataTypes.Time)
         );
-        
+
         // name -> set of neighbor names
         var neighbors = ComputeNeighbors(routeData, stopPerGtfsId, stopsData);
 
@@ -102,6 +102,7 @@ public class ImportPragueTramStops
         // P197: next stop
         //  +P5051: direction
 
+        Console.Write("Importing");
         foreach (var (stopName, stopData) in stopsData)
         {
             var qid = stopsInWikidata[stopName];
@@ -110,7 +111,7 @@ public class ImportPragueTramStops
 
             if (entity.Claims == null)
             {
-                Console.Error.WriteLine($"WARNING! Unable to read entity {qid}!");
+                Console.Error.WriteLine($"\nWARNING! Unable to read entity {qid}!");
                 continue;
             }
 
@@ -129,16 +130,17 @@ public class ImportPragueTramStops
             CheckClaim(entity, WikidataProperties.Country, "Q213", edits);
             CheckClaim(entity, WikidataProperties.LocatedInAdminEntity, "Q1085", edits);
             CheckClaim(entity, WikidataProperties.UsageState, "Q55654238", edits);
-            CheckCoordClaim(entity, WikidataProperties.Coordinates, (double)stopData.Lat, (double)stopData.Lon, edits);
+            CheckCoordClaim(entity, WikidataProperties.Coordinates, (double) stopData.Lat, (double) stopData.Lon, edits);
             CheckNeighborClaims(entity, neighbors[stopName].Select(x => (stopsInWikidata[x.Item1], stopsInWikidata[x.Item2])).ToHashSet(), edits);
 
             if (edits.Count > 0)
             {
-                Console.WriteLine($"{qid} ({stopName}): {edits.Count} edit(s)");
-
-                // if (wikidataSite.AccountInfo.IsAnonymous) throw new InvalidOperationException("Not logged in!");
-                // Console.WriteLine($"Editing {qid}");
-                // await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
+                Console.Write("*");
+                await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
+            }
+            else
+            {
+                Console.Write(".");
             }
         }
     }
@@ -148,7 +150,7 @@ public class ImportPragueTramStops
         if (entity.Labels.ContainsLanguage(language))
         {
             var currentLabel = entity.Labels[language];
-            if (currentLabel != stopName) Console.Error.WriteLine($"Warning: {entity.Id} has {language} label '{currentLabel}' instead of '{stopName}'");
+            if (currentLabel != stopName) Console.Error.WriteLine($"\nWarning: {entity.Id} has {language} label '{currentLabel}' instead of '{stopName}'");
         }
         else
         {
@@ -161,7 +163,7 @@ public class ImportPragueTramStops
         if (entity.Descriptions.ContainsLanguage(language))
         {
             var currentDesc = entity.Descriptions[language];
-            if (currentDesc.Replace(' ', ' ') != description.Replace(' ', ' ')) Console.Error.WriteLine($"Note: {entity.Id} has {language} description '{currentDesc}' instead of '{description}'");
+            if (currentDesc.Replace(' ', ' ') != description.Replace(' ', ' ')) Console.Error.WriteLine($"\nNote: {entity.Id} has {language} description '{currentDesc}' instead of '{description}'");
         }
         else
         {
@@ -180,12 +182,12 @@ public class ImportPragueTramStops
         extraAliases.ExceptWith(aliases);
         if (extraAliases.Count > 0)
         {
-            Console.Error.WriteLine($"Note: {entity.Id} has {extraAliases.Count} extra alias(es): {String.Join(", ", extraAliases)}");
+            Console.Error.WriteLine($"\nNote: {entity.Id} has {extraAliases.Count} extra alias(es): {String.Join(", ", extraAliases)}");
         }
 
         if (aliasesToAdd.Count > 0)
         {
-            edits.Add(new EntityEditEntry(nameof(entity.Aliases), new WbMonolingualTextCollection(aliasesToAdd.Select(a => new WbMonolingualText(language, a)))));
+            edits.AddRange( aliasesToAdd.Select(a => new EntityEditEntry(nameof(entity.Aliases), new WbMonolingualText(language, a))));
         }
     }
 
@@ -196,12 +198,12 @@ public class ImportPragueTramStops
             var claimValues = entity.Claims[property];
             if (claimValues.Any(c => value.Equals(c.MainSnak.DataValue)))
             {
-                if (claimValues.Count > 1) Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count - 1} additional {property} values");
+                if (claimValues.Count > 1) Console.Error.WriteLine($"\nWarning: {entity.Id} has {claimValues.Count - 1} additional {property} values");
             }
             else
             {
                 if (claimValues.Count == 0) throw new UnexpectedDataException($"Empty {property} claims in {entity.Id}?!");
-                Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count} {property} value(s) but not the expected one");
+                Console.Error.WriteLine($"\nWarning: {entity.Id} has {claimValues.Count} {property} value(s) but not the expected one");
             }
         }
         else
@@ -219,7 +221,7 @@ public class ImportPragueTramStops
             var claimValues = entity.Claims[property];
             if (claimValues.Count != 1)
             {
-                Console.Error.WriteLine($"Warning: ${entity.Id} has {claimValues.Count} {property} values");
+                Console.Error.WriteLine($"\nWarning: {entity.Id} has {claimValues.Count} {property} values");
             }
             else
             {
@@ -230,7 +232,7 @@ public class ImportPragueTramStops
                 var dist = Math.Abs(lat - claimValue.Latitude) + Math.Abs(lon - claimValue.Longitude);
                 if (dist > 0.0007)
                 {
-                    Console.Error.WriteLine($"Warning: {entity.Id} has suspicious coordinates ({lat}, {lon} expected; distance {dist * 40000 / 360.0f:F5})");
+                    Console.Error.WriteLine($"\nWarning: {entity.Id} has suspicious coordinates ({lat}, {lon} expected; distance {dist * 40000 / 360.0f:F5})");
 
                     edits.Add(new EntityEditEntry(nameof(entity.Claims), claim, EntityEditEntryState.Removed));
                     var addedCoordClaim = new Claim(new Snak(WikidataProperties.Coordinates, new WbGlobeCoordinate(lat, lon, 0.0001, WikidataProperties.GlobeEarth), BuiltInDataTypes.GlobeCoordinate));
@@ -249,24 +251,38 @@ public class ImportPragueTramStops
 
     private static void CheckNeighborClaims(Entity entity, HashSet<(string, string)> neighborQids, List<EntityEditEntry> edits)
     {
-        var property = WikidataProperties.NeighboringStop;
         var missingNeighbors = new HashSet<(string, string)>(neighborQids);
-        if (entity.Claims.ContainsKey(property))
+        if (entity.Claims.ContainsKey(WikidataProperties.NeighboringStop))
         {
-            var claims = entity.Claims[property];
+            var neighborSet = neighborQids.Select(n => n.Item1).ToHashSet();
+
+            var claims = entity.Claims[WikidataProperties.NeighboringStop];
             foreach (var claim in claims)
             {
                 var neighborQid = (string) claim.MainSnak.DataValue;
                 var directionQualifiers = claim.Qualifiers.Where(q => q.PropertyId == WikidataProperties.TerminusDirection).ToList();
                 bool ok;
-                if (directionQualifiers.Count != 1)
+                if (directionQualifiers.Count > 1)
                 {
-                    Console.Error.WriteLine($"Warning: ${entity.Id} has {directionQualifiers.Count} qualifiers for neighboring {neighborQid}");
-                    ok = false;
+                    Console.Error.WriteLine($"\nError: {entity.Id} has {directionQualifiers.Count} qualifiers for neighboring {neighborQid}");
+                    return;
+                }
+                if (directionQualifiers.Count == 0)
+                {
+                    Console.Error.WriteLine($"\nNote: {entity.Id} has no qualifiers for neighboring {neighborQid}");
+                    if (neighborSet.Contains(neighborQid))
+                    {
+                        ok = false;
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine($"\nWarning: That is an unknown neighbor {neighborQid} on {entity.Id}, keeping untouched");
+                        ok = true;
+                    }
                 }
                 else
                 {
-                    var directionQid = (string)directionQualifiers.Single().DataValue;
+                    var directionQid = (string) directionQualifiers.Single().DataValue;
                     var key = (neighborQid, directionQid);
                     if (neighborQids.Contains(key))
                     {
@@ -275,12 +291,25 @@ public class ImportPragueTramStops
                     }
                     else
                     {
-                        ok = false;
-                        Console.Error.WriteLine($"Warning: ${entity.Id} has extra neighboring ({neighborQid}, {directionQid})");
+                        if (neighborSet.Contains(neighborQid))
+                        {
+                            Console.Error.WriteLine($"\nNote: {entity.Id} has a different destination {directionQid} for neighboring {neighborQid}");
+                            ok = false;
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"\nWarning: That is an unknown neighbor {neighborQid} on {entity.Id}, keeping untouched");
+                            ok = true;
+                        }
                     }
                 }
                 if (!ok)
                 {
+                    if (claim.References.Count > 0)
+                    {
+                        Console.Error.WriteLine($"\nError: {entity.Id} has {claim.References.Count} references, not processing further");
+                        return;
+                    }
                     edits.Add(new EntityEditEntry(nameof(entity.Claims), claim, EntityEditEntryState.Removed));
                 }
             }
