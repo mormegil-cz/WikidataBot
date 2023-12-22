@@ -19,26 +19,36 @@ namespace TestConsole
 
         public const string UserAgent = $"${ProductName}/${Version} (mormegil@centrum.cz) ${WikiClient.WikiClientUserAgent}";
 
-        private const string WikidataApiEndpoint = "https://www.wikidata.org/w/api.php";
-        private const string QueryEndpoint = "https://query.wikidata.org/sparql";
+        public const string WikidataApiEndpoint = "https://www.wikidata.org/w/api.php";
+        public const string CommonsApiEndpoint = "https://commons.wikimedia.org/w/api.php";
+        public const string WikidataQueryServiceEndpoint = "https://query.wikidata.org/sparql";
+        public const string CommonsQueryServiceEndpoint = "https://commons-query.wikimedia.org/sparql";
+        public const string CommonsQueryServiceOAuthCookieName = "wcqsOAuth";
 
-        public static async Task<WikiSite> Init()
+        public static async Task<WikiSite> Init(string apiEndpoint)
         {
             var wikiClient = new WikiClient { ClientUserAgent = UserAgent };
-            var wikidataSite = new WikiSite(wikiClient, WikidataApiEndpoint);
+            var wikidataSite = new WikiSite(wikiClient, apiEndpoint);
             await wikidataSite.Initialization;
 
             return wikidataSite;
         }
 
-        public static Task<string> GetSparqlResults(string sparql)
+        public static Task<string> GetSparqlResults(string sparql) => GetSparqlResults(WikidataQueryServiceEndpoint, null, null, sparql);
+
+        public static Task<string> GetSparqlResults(string queryServiceEndpoint, string? cookieName, string? cookieValue, string sparql)
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+            client.DefaultRequestHeaders.Add("Accept", "application/sparql-results+json");
+            if (cookieName != null)
+            {
+                client.DefaultRequestHeaders.Add("Cookie",  cookieName + "=" + cookieValue);
+            }
             // TODO: Alternate POSTed form for long queries
             // TODO: URI building and escaping
             // TODO: Collapse multiple tabs to shorten the string
-            var uriBuilder = new UriBuilder(QueryEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
+            var uriBuilder = new UriBuilder(queryServiceEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
             try
             {
                 return client.GetStringAsync(uriBuilder.Uri);
@@ -117,7 +127,7 @@ namespace TestConsole
                 CultureInfo.InvariantCulture,
                 url.Format,
                 url.GetArguments()
-                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .Select(a => (object)Uri.EscapeDataString(a?.ToString() ?? ""))
                     .ToArray()
             );
 

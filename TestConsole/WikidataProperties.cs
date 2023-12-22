@@ -22,15 +22,20 @@ public static class WikidataProperties
     public const string NeighboringStop = "P197";
     public const string TerminusDirection = "P5051";
     
+    public const string Creator = "P170";
+    public const string AuthorText = "P2093";
     public const string StatedIn = "P248";
     public const string ReferenceUrl = "P854";
     public const string AccessDate = "P813";
     public const string PublishDate = "P577";
-
+    
     public const string UdcOfConcept = "P1190";
     public const string UdcOfTopic = "P8361";
 
+    public const string Url = "P2699";
     public const string Mastodon = "P4033";
+    public const string FlickrId = "P3267";
+    public const string WikimediaUsername = "P4174";
 
     public const string FotbalIdnesId = "P3663";
 

@@ -25,9 +25,10 @@ namespace TestConsole
         {
             // await MapCsfdToImdb.Run(@"c:\Temp\csfd\csfd-list.csv", @"c:\Temp\csfd\csfd-to-imdb.csv");
 
-            var wikidataSite = await WikidataTools.Init();
+            var wikidataSite = await WikidataTools.Init(WikidataTools.WikidataApiEndpoint);
+            // var commonsSite = await WikidataTools.Init(WikidataTools.CommonsApiEndpoint);
 
-            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "" }) ?? throw new FormatException("Missing configuration");
+            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "", wcqsOAuthCookie = "" }) ?? throw new FormatException("Missing configuration");
 
             await Console.Error.WriteLineAsync("Logging in...");
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
@@ -53,7 +54,9 @@ namespace TestConsole
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
             // await MastodonAddFromDate.Run(wikidataSite);
-            await ImportPragueTramStops.Run(wikidataSite);
+            // await ImportPragueTramStops.Run(wikidataSite);
+
+            // await AddWikimediaAuthorToFlickrImages.Run(commonsSite, credentials.wcqsOAuthCookie);
         }
     }
 }
