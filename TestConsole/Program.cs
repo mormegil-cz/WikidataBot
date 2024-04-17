@@ -50,7 +50,7 @@ namespace TestConsole
             // await FixHqFromAres.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
-            // await UpdateDisambigDescription.Run(wikidataSite);
+            await UpdateDisambigDescription.Run(wikidataSite);
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
             // await MastodonAddFromDate.Run(wikidataSite);

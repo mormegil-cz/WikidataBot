@@ -12,23 +12,29 @@ namespace TestConsole.Tasks
 {
     public static class UpdateDisambigDescription
     {
-        private static readonly string EditGroupId = GenerateRandomEditGroupId();
-        private static readonly string EditSummary = MakeEditSummary("Unifying cs descriptions on disambiguations", EditGroupId);
-
         public static async Task Run(WikiSite wikidataSite)
         {
+            //await RunReplacement(wikidataSite, "Q4167410", "rozcestník", "rozcestník na projektech Wikimedia", "Unifying cs descriptions on disambiguations");
+            await RunReplacement(wikidataSite, "Q4167836", "kategorie Wikipedie", "kategorie na projektech Wikimedia", "Unifying cs descriptions on categories");
+        }
+
+        private static async Task RunReplacement(WikiSite wikidataSite, string classQid, string what, string replacedWith, string editSummaryText)
+        {
+            var editGroupId = GenerateRandomEditGroupId();
+            var editSummary = MakeEditSummary(editSummaryText, editGroupId);
+
             var batch = 0;
             var duplicateItems = new HashSet<(string, string?)>();
             while (true)
             {
                 ++batch;
                 await Console.Error.WriteLineAsync($"Batch #{batch} Retrieving data from WQS");
-                var entities = GetEntities(await GetSparqlResults(@"
-SELECT DISTINCT ?item WHERE {
-	?item wdt:P31/wdt:P279* wd:Q4167410;
-          schema:description 'rozcestník'@cs.
-  MINUS {
-    VALUES ?item { " + String.Join(' ', duplicateItems.Select(item => "wd:" + item.Item1)) + @" }
+                var entities = GetEntities(await GetSparqlResults($@"
+SELECT DISTINCT ?item WHERE {{
+	?item wdt:P31/wdt:P279* wd:{classQid};
+          schema:description '{what}'@cs.
+  MINUS {{
+    VALUES ?item {{ " + String.Join(' ', duplicateItems.Select(item => "wd:" + item.Item1)) + @" }
   }
 }
 LIMIT 100
@@ -53,9 +59,9 @@ LIMIT 100
                     }
 
                     var currDesc = entity.Descriptions["cs"];
-                    if (currDesc != "rozcestník")
+                    if (currDesc != what)
                     {
-                        if (currDesc != "rozcestník na projektech Wikimedia") await Console.Error.WriteLineAsync($"WARNING! Entity {entityId}: Unexpected description {currDesc}'");
+                        if (currDesc != replacedWith) await Console.Error.WriteLineAsync($"WARNING! Entity {entityId}: Unexpected description {currDesc}'");
                         duplicateItems.Add((entityId, null));
                         continue;
                     }
@@ -64,12 +70,12 @@ LIMIT 100
                     var edits = new List<EntityEditEntry>
                     {
                         // Update a claim
-                        new(nameof(Entity.Descriptions), new WbMonolingualText("cs", "rozcestník na projektech Wikimedia")),
+                        new(nameof(Entity.Descriptions), new WbMonolingualText("cs", replacedWith)),
                     };
                     await Console.Error.WriteLineAsync($"Editing {entityId}");
                     try
                     {
-                        await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
+                        await entity.EditAsync(edits, editSummary, EntityEditOptions.Bot);
                     }
                     catch (OperationFailedException e)
                     {
