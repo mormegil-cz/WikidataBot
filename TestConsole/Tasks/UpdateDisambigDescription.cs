@@ -14,7 +14,7 @@ namespace TestConsole.Tasks
     {
         public static async Task Run(WikiSite wikidataSite)
         {
-            //await RunReplacement(wikidataSite, "Q4167410", "rozcestník", "rozcestník na projektech Wikimedia", "Unifying cs descriptions on disambiguations");
+            await RunReplacement(wikidataSite, "Q4167410", "rozcestník", "rozcestník na projektech Wikimedia", "Unifying cs descriptions on disambiguations");
             await RunReplacement(wikidataSite, "Q4167836", "kategorie Wikipedie", "kategorie na projektech Wikimedia", "Unifying cs descriptions on categories");
         }
 
@@ -31,8 +31,16 @@ namespace TestConsole.Tasks
                 await Console.Error.WriteLineAsync($"Batch #{batch} Retrieving data from WQS");
                 var entities = GetEntities(await GetSparqlResults($@"
 SELECT DISTINCT ?item WHERE {{
-	?item wdt:P31/wdt:P279* wd:{classQid};
-          schema:description '{what}'@cs.
+  {{
+    {{ ?item wdt:P31 wd:{classQid}. }}
+    UNION
+    {{ ?item wdt:P31/wdt:P279 wd:{classQid}. }}
+    UNION
+    {{ ?item wdt:P31/wdt:P279/wdt:P279 wd:{classQid}. }}
+    UNION
+    {{ ?item wdt:P31/wdt:P279/wdt:P279/wdt:P279 wd:{classQid}. }}
+  }}
+  ?item schema:description '{what}'@cs.
   MINUS {{
     VALUES ?item {{ " + String.Join(' ', duplicateItems.Select(item => "wd:" + item.Item1)) + @" }
   }
