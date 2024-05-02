@@ -18,6 +18,8 @@ public static class WikidataProperties
     public const string LocatedInAdminEntity = "P131";
     public const string Coordinates = "P625";
 
+    public const string FieldOfWork = "P101";
+    
     public const string UsageState = "P5817";
     public const string NeighboringStop = "P197";
     public const string TerminusDirection = "P5051";
