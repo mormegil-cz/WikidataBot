@@ -49,6 +49,7 @@ namespace TestConsole
             // await ImportCadastralCoords.Run(wikidataSite);
             // await FixHqFromAres.Run(wikidataSite);
             // await FixupNkcrFieldOfWork.Run(wikidataSite);
+            // await ImportPragueTramStops.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);
