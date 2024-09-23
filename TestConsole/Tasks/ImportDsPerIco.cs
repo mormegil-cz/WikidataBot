@@ -20,9 +20,9 @@ namespace TestConsole.Tasks
         private const int QuerySkip = 0;
 
         internal const bool ImportingPo = true;
-        internal static readonly DateOnly ImportDate = new(2023, 11, 9);
+        internal static readonly DateOnly ImportDate = new(2024, 9, 23);
 
-        private const string BasePath = @"/home/petr/Downloads";
+        private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
         private static readonly string ImportFileName = Path.Combine(BasePath, ImportingPo
             ? $"seznam_ds_po-{ImportDate.ToString("yyyy-MM-dd")}.xml.gz"
@@ -33,7 +33,7 @@ namespace TestConsole.Tasks
         private static int UpToDateEntries = 0;
         private static int DifferentEntries = 0;
         private static int ImportedEntries = 0;
-        private static HashSet<string> RemainingMissingIcos = new();
+        private static HashSet<string> RemainingMissingIcos = [];
 
         public static async Task Run(WikiSite wikidataSite)
         {
@@ -48,7 +48,7 @@ SELECT ?ico WHERE {
 }
 "), new Dictionary<string, string> { { "ico", "literal" } }).Select(row => row[0]!).ToHashSet();
 
-                RemainingMissingIcos = new HashSet<string>(missingIcos);
+                RemainingMissingIcos = [..missingIcos];
                 Console.WriteLine($"{missingIcos.Count} IČOs without DS ID");
                 // using (var importer = new QuickStatementExport())
                 using (var importer = new BotEditingImport(wikidataSite))
