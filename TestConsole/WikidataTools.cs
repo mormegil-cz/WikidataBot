@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -34,16 +35,16 @@ namespace TestConsole
             return wikidataSite;
         }
 
-        public static Task<string> GetSparqlResults(string sparql) => GetSparqlResults(WikidataQueryServiceEndpoint, null, null, sparql);
+        public static Task<string> GetSparqlResults([StringSyntax("Sparql")] string sparql) => GetSparqlResults(WikidataQueryServiceEndpoint, null, null, sparql);
 
-        public static Task<string> GetSparqlResults(string queryServiceEndpoint, string? cookieName, string? cookieValue, string sparql)
+        public static Task<string> GetSparqlResults(string queryServiceEndpoint, string? cookieName, string? cookieValue, [StringSyntax("Sparql")] string sparql)
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             client.DefaultRequestHeaders.Add("Accept", "application/sparql-results+json");
             if (cookieName != null)
             {
-                client.DefaultRequestHeaders.Add("Cookie",  cookieName + "=" + cookieValue);
+                client.DefaultRequestHeaders.Add("Cookie", cookieName + "=" + cookieValue);
             }
             // TODO: Alternate POSTed form for long queries
             // TODO: URI building and escaping
@@ -95,7 +96,7 @@ namespace TestConsole
             }
         }
 
-        public static string GetEntityIdFromUri(string entityUri) => new Uri(entityUri).AbsolutePath.Split('/').Last();
+        public static string GetEntityIdFromUri(string? entityUri) => entityUri == null ? "" : new Uri(entityUri).AbsolutePath.Split('/').Last();
 
         public static string GetStatementIdFromUri(string statementUri) => ReplaceFirst(new Uri(statementUri).AbsolutePath.Split('/').Last(), '-', '$');
 
@@ -127,7 +128,7 @@ namespace TestConsole
                 CultureInfo.InvariantCulture,
                 url.Format,
                 url.GetArguments()
-                    .Select(a => (object)Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
                     .ToArray()
             );
 

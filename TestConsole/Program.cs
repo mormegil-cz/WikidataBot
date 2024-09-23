@@ -52,9 +52,9 @@ namespace TestConsole
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);
-            await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
+            // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
-            // await MastodonAddFromDate.Run(wikidataSite);
+            await MastodonAddFromDate.Run(wikidataSite);
             // await ImportPragueTramStops.Run(wikidataSite);
 
             // await AddWikimediaAuthorToFlickrImages.Run(commonsSite, credentials.wcqsOAuthCookie);

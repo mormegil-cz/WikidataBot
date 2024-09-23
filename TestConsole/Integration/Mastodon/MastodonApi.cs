@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -64,6 +65,25 @@ public static class MastodonApi
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(WikidataTools.ProductName, WikidataTools.Version));
         client.Timeout = TimeSpan.FromSeconds(20);
         return client;
+    }
+
+    [Pure]
+    public static bool ShouldProcess(string? mastodonAccountId, string entityId)
+    {
+        var match = reAccountParseFormat.Match(mastodonAccountId ?? "");
+        if (!match.Success)
+        {
+            Console.Error.WriteLine($"Invalid/unexpected account ID format at {entityId}: '{mastodonAccountId}'");
+            return false;
+        }
+
+        if (serverBlacklist.Contains(match.Groups[2].Value))
+        {
+            Console.Error.WriteLine($"Skipping blacklisted server in '{mastodonAccountId}' at {entityId}");
+            return false;
+        }
+
+        return true;
     }
 
     public static async Task<string?> GetProfileUrl(string? mastodonAccountId, string entityId)

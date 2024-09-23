@@ -26,16 +26,17 @@ public static class MastodonAddFromDate
             ++batch;
             await Console.Error.WriteAsync($"Batch #{batch} Retrieving data from WQS...");
             var entities = GetEntities(await GetSparqlResults(@"
-SELECT DISTINCT ?item WHERE {
+SELECT ?item ?mastodon WHERE {
   ?item p:P4033 ?stmt.
   MINUS {
     VALUES ?item { " + String.Join(' ', problematicItems.Select(item => "wd:" + item)) + @" }
   }
   MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank }
   MINUS { ?stmt pq:P580 [] }
+  ?stmt ps:P4033 ?mastodon.
 }
 LIMIT 500
-"), new Dictionary<string, string> { { "item", "uri" } }).ToList();
+"), new Dictionary<string, string> { { "item", "uri" }, { "mastodon", "literal" } }).ToList();
             if (entities.Count == 0) break;
 
             var counter = 0;
@@ -45,6 +46,14 @@ LIMIT 500
             {
                 ++counter;
                 var entityId = GetEntityIdFromUri(row[0]);
+                var mastodonFromQuery = row[1];
+
+                if (!MastodonApi.ShouldProcess(mastodonFromQuery, entityId))
+                {
+                    problematicItems.Add(entityId);
+                    continue;
+                }
+
                 // await Console.Error.WriteLineAsync($"Reading {entityId} ({counter}/{count})");
                 var entity = new Entity(wikidataSite, entityId);
                 await entity.RefreshAsync(EntityQueryOptions.FetchClaims, Languages);
