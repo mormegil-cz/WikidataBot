@@ -19,27 +19,29 @@ public static class MastodonApi
     {
         // Request signature required
         "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social", "crimew.gay", "kind.social", "octodon.social", "scicomm.xyz",
+        "mastodon.ie", "akademienl.social", "mastodonapp.uk", "infosec.exchange", "flipping.rocks", "botsin.space", "indieweb.social", "climatejustice.social",
 
         // Forbidden
-        "counter.social",
+        "counter.social", "quey.org",
 
         // No account published date
-        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net",
+        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net", "social.kernel.org", "neenster.org",
 
         // DNS failure
         "mastodon.technology", "mastodon.etalab.gouv.fr", "quitter.im", "mastoforce.social", "socialscience.re", "m.sclo.nl", "mstdn.soc", "mastodon.soc", "social.bitcast.info", "mastodon.huma-num.fr", "mstdn.sci", "social.numerama.com", "joura.host",
+        "nzserver.co", "mastodon.lol", "mastodon.se",
 
         // SSL failure
-        "mstdn.appliedecon.social", "camerondcampbell.masto.host", "mastodonten.de", "peertube.video", "soc.ialis.me",
+        "mstdn.appliedecon.social", "camerondcampbell.masto.host", "mastodonten.de", "peertube.video", "soc.ialis.me", "mastodon.mikegerwitz.com", "pirati.cc",
 
         // Timeout
-        "eupublic.social", "content.town", "masthead.social",
+        "eupublic.social", "content.town", "masthead.social", "campaign.openworlds.info",
 
         // Connection refused
         "oyd.social",
 
         // Invalid JSON received
-        "social.csswg.org", "mastodon.at", "mail.huji.ac.il", "koyu.space",
+        "social.csswg.org", "mastodon.at", "mail.huji.ac.il", "koyu.space", "alexsirac.com", "retrotroet.com",
     };
 
     private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@/%]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
