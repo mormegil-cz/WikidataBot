@@ -15,8 +15,8 @@ namespace TestConsole.Tasks;
 
 public class UpdateZipFromRuian
 {
-    private const string BasePath = @"/home/petr/Downloads";
-    private static readonly DateOnly ImportCsvDate = new(2024, 2, 29);
+    private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+    private static readonly DateOnly ImportCsvDate = new(2024, 8, 31);
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     // see https://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
@@ -176,7 +176,7 @@ SELECT ?item ?ruian ?zip WHERE {
             foreach (var zip in e.Value)
             {
                 var zipToRemove = FormatZip(zip);
-                var claim = entity.Claims["P281"].Where(claim => claim.MainSnak.SnakType == SnakType.Value && (string)claim.MainSnak.DataValue == zipToRemove).ToList();
+                var claim = entity.Claims["P281"].Where(claim => claim.MainSnak.SnakType == SnakType.Value && (string) claim.MainSnak.DataValue == zipToRemove).ToList();
                 if (claim.Count != 1)
                 {
                     await Console.Error.WriteLineAsync($"WARNING! Entity {entityId} contains {claim.Count} claims with {zipToRemove}");
