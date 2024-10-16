@@ -49,7 +49,7 @@ namespace TestConsole.Tasks
             }
         }
 
-        private static T GetOnly<T>(ICollection<T> sequence)
+        private static T? GetOnly<T>(ICollection<T> sequence)
             where T : class
         {
             return sequence.Count == 1 ? sequence.Single() : null;

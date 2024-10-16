@@ -40,6 +40,7 @@ public static class WikidataProperties
     public const string WikimediaUsername = "P4174";
 
     public const string FotbalIdnesId = "P3663";
+    public const string CzechTheatreEncyclopedia = "P9391";
 
     public static readonly Uri GlobeEarth = new("http://www.wikidata.org/entity/Q2");
 }
