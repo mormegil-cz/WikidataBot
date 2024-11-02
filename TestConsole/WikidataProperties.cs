@@ -5,6 +5,7 @@ namespace TestConsole;
 public static class WikidataProperties
 {
     public const string StartTime = "P580";
+    public const string EndTime = "P582";
     public const string OfficialName = "P1448";
     public const string LexemeSense = "P7018";
 
@@ -27,6 +28,8 @@ public static class WikidataProperties
     public const string Creator = "P170";
     public const string AuthorText = "P2093";
     public const string StatedIn = "P248";
+    public const string Title = "P1476";
+    public const string Publisher = "P123";
     public const string ReferenceUrl = "P854";
     public const string AccessDate = "P813";
     public const string PublishDate = "P577";
@@ -34,6 +37,8 @@ public static class WikidataProperties
     public const string UdcOfConcept = "P1190";
     public const string UdcOfTopic = "P8361";
 
+    public const string ReferenceRate = "P2661";
+    
     public const string Url = "P2699";
     public const string Mastodon = "P4033";
     public const string FlickrId = "P3267";
@@ -43,4 +48,6 @@ public static class WikidataProperties
     public const string CzechTheatreEncyclopedia = "P9391";
 
     public static readonly Uri GlobeEarth = new("http://www.wikidata.org/entity/Q2");
+
+    public static readonly Uri UnitPercent = new("http://www.wikidata.org/entity/Q11229");
 }
