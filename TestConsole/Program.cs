@@ -57,8 +57,9 @@ namespace TestConsole
             // await UpdateZipFromRuian.Run(wikidataSite);
             // await MastodonAddFromDate.Run(wikidataSite);
             // await ImportPragueTramStops.Run(wikidataSite);
-            //await FixCdeReferences.Run(wikidataSite);
-            await ImportBankRefRate.Run(wikidataSite);
+            // await FixCdeReferences.Run(wikidataSite);
+            // await ImportBankRefRate.Run(wikidataSite);
+            await WikidataItemCreationStatistics.Run(wikidataSite);
 
             // await AddWikimediaAuthorToFlickrImages.Run(commonsSite, credentials.wcqsOAuthCookie);
         }
