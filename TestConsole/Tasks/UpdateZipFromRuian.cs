@@ -16,7 +16,7 @@ namespace TestConsole.Tasks;
 public class UpdateZipFromRuian
 {
     private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-    private static readonly DateOnly ImportCsvDate = new(2024, 8, 31);
+    private static readonly DateOnly ImportCsvDate = new(2024, 12, 31);
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     // see https://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
@@ -211,7 +211,7 @@ SELECT ?item ?ruian ?zip WHERE {
                 claim.References.Add(new ClaimReference(
                     new Snak("P248", "Q12049125", BuiltInDataTypes.WikibaseItem),
                     new Snak("P577", importCsvWbTime, BuiltInDataTypes.Time),
-                    new Snak("P854", "https://vdp.cuzk.cz/vymenny_format/csv/" + ImportCsvFile, BuiltInDataTypes.Url),
+                    new Snak("P854", "https://vdp.cuzk.gov.cz/vymenny_format/csv/" + ImportCsvFile, BuiltInDataTypes.Url),
                     new Snak("P813", importWbTime, BuiltInDataTypes.Time)
                 ));
 
