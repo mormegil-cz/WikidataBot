@@ -50,4 +50,5 @@ public static class WikidataProperties
     public static readonly Uri GlobeEarth = new("http://www.wikidata.org/entity/Q2");
 
     public static readonly Uri UnitPercent = new("http://www.wikidata.org/entity/Q11229");
+    public static readonly Uri UnitCentimetre = new("http://www.wikidata.org/entity/Q174728");
 }

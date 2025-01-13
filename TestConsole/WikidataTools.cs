@@ -122,7 +122,7 @@ namespace TestConsole
             await entity.RefreshAsync(EntityQueryOptions.FetchLabels, new[] { language });
             return entity.Labels[language];
         }
-
+        
         public static string EncodeUrlParameters(FormattableString url) =>
             String.Format(
                 CultureInfo.InvariantCulture,
