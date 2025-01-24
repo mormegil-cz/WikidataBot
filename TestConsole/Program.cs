@@ -48,16 +48,17 @@ namespace TestConsole
             // await WikidataTreeBuilder.Run();
             // await ImportCadastralCoords.Run(wikidataSite);
             // await FixHqFromAres.Run(wikidataSite);
-            await FixNameFromRejskol.Run(wikidataSite);
+            // await FixNameFromRejskol.Run(wikidataSite);
             // await FixupNkcrFieldOfWork.Run(wikidataSite);
             // await ImportPragueTramStops.Run(wikidataSite);
             // await FixCdeReferences.Run(wikidataSite);
+            // await ImportBankRefRate.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
-            // await MastodonAddFromDate.Run(wikidataSite);
+            await MastodonAddFromDate.Run(wikidataSite);
             // await WikidataItemCreationStatistics.Run(wikidataSite);
 
             // await AddWikimediaAuthorToFlickrImages.Run(commonsSite, credentials.wcqsOAuthCookie);

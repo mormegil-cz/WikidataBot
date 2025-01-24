@@ -16,17 +16,16 @@ namespace TestConsole.Integration.Mastodon;
 
 public static class MastodonApi
 {
-    private static readonly HashSet<String> serverBlacklist = new()
-    {
-        // Request signature required
+    private static readonly HashSet<String> serverBlacklist =
+    [
         "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social", "crimew.gay", "kind.social", "octodon.social", "scicomm.xyz",
-        "mastodon.ie", "akademienl.social", "mastodonapp.uk", "infosec.exchange", "flipping.rocks", "botsin.space", "indieweb.social", "climatejustice.social",
+        "mastodon.ie", "akademienl.social", "mastodonapp.uk", "infosec.exchange", "flipping.rocks", "botsin.space", "indieweb.social", "climatejustice.social", "sciences.re",
 
         // Forbidden
         "counter.social", "quey.org",
 
         // No account published date
-        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net", "social.kernel.org", "neenster.org",
+        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net", "social.kernel.org", "neenster.org", "micro.blog", "social.gl-como.it",
 
         // DNS failure
         "mastodon.technology", "mastodon.etalab.gouv.fr", "quitter.im", "mastoforce.social", "socialscience.re", "m.sclo.nl", "mstdn.soc", "mastodon.soc", "social.bitcast.info", "mastodon.huma-num.fr", "mstdn.sci", "social.numerama.com", "joura.host",
@@ -43,7 +42,10 @@ public static class MastodonApi
 
         // Invalid JSON received
         "social.csswg.org", "mastodon.at", "mail.huji.ac.il", "koyu.space", "alexsirac.com", "retrotroet.com",
-    };
+
+        // Server closed
+        "home.social"
+    ];
 
     private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@/%]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
