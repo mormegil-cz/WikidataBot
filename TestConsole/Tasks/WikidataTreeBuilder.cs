@@ -47,7 +47,7 @@ SELECT ?item ?itemLabel ?parents WHERE {
 		}
 		GROUP BY ?item
 	}
-	SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"". }
+	SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"", ""mul"". }
 }"), new Dictionary<string, string> { { "item", "uri" }, { "itemLabel", "literal" }, { "parents", "literal" } }).ToList();
 
             Console.WriteLine("OK");
