@@ -6,15 +6,10 @@ using WikiClientLibrary.Sites;
 
 namespace TestConsole;
 
-public class WikidataCache<TKey, TData>
+public class WikidataCache<TKey, TData>(Func<TKey, Task<TData>> retrieveFunc)
+    where TKey : notnull
 {
-    private readonly Func<TKey, Task<TData>> retrieveFunc;
     private readonly Dictionary<TKey, TData> cache = new();
-
-    public WikidataCache(Func<TKey, Task<TData>> retrieveFunc)
-    {
-        this.retrieveFunc = retrieveFunc;
-    }
 
     public async Task<TData> Get(TKey key)
     {

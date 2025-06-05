@@ -14,18 +14,18 @@ using WikiClientLibrary.Wikibase.DataTypes;
 
 namespace TestConsole.Integration.Mastodon;
 
-public static class MastodonApi
+public static partial class MastodonApi
 {
     private static readonly HashSet<String> serverBlacklist =
     [
         "gensokyo.social", "grapheneos.social", "icosahedron.website", "masto.donte.com.br", "mastodon.art", "merveilles.town", "pleroma.envs.net", "projectmushroom.social", "scholar.social", "tenforward.social", "vt.social", "crimew.gay", "kind.social", "octodon.social", "scicomm.xyz",
-        "mastodon.ie", "akademienl.social", "mastodonapp.uk", "infosec.exchange", "flipping.rocks", "botsin.space", "indieweb.social", "climatejustice.social", "sciences.re",
+        "mastodon.ie", "akademienl.social", "mastodonapp.uk", "flipping.rocks", "botsin.space", "indieweb.social", "climatejustice.social", "sciences.re",
 
         // Forbidden
         "counter.social", "quey.org",
 
         // No account published date
-        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net", "social.kernel.org", "neenster.org", "micro.blog", "social.gl-como.it",
+        "qoto.org", "pawoo.net", "social.weho.st", "people.kernel.org", "pixelfed.social", "write.as", "gnusocial.net", "podlibre.social", "open.audio", "social.saghul.net", "social.kernel.org", "neenster.org", "micro.blog", "social.gl-como.it", "loma.ml",
 
         // DNS failure
         "mastodon.technology", "mastodon.etalab.gouv.fr", "quitter.im", "mastoforce.social", "socialscience.re", "m.sclo.nl", "mstdn.soc", "mastodon.soc", "social.bitcast.info", "mastodon.huma-num.fr", "mstdn.sci", "social.numerama.com", "joura.host",
@@ -44,13 +44,11 @@ public static class MastodonApi
         "social.csswg.org", "mastodon.at", "mail.huji.ac.il", "koyu.space", "alexsirac.com", "retrotroet.com",
 
         // Server closed
-        "home.social"
+        "home.social",
     ];
 
-    private static readonly Regex reAccountParseFormat = new(@"^([^@]+)@([^@/%]*)$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
-    // no port, no IP-address-only, limit length (just some random limit, could be raised)
-    private static readonly Regex reUrlValidator = new(@"^https?://[0-9a-z.-]*[a-z][a-z0-9.-]*/.{0,100}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex reAccountParseFormat = RegexAccountParseFormat();
+    private static readonly Regex reUrlValidator = RegexUrlValidator();
 
     private static readonly HttpClient webFingerHttpClient = InitHttpClient("application/jrd+json", 5);
     private static readonly HttpClient activityHttpClient = InitHttpClient("application/activity+json", 0);
@@ -204,4 +202,11 @@ public static class MastodonApi
 
         return new WbTime(publishedTimestamp.Year, publishedTimestamp.Month, publishedTimestamp.Day, 0, 0, 0, 0, 0, 0, WikibaseTimePrecision.Day, WbTime.GregorianCalendar);
     }
+
+    [GeneratedRegex(@"^([^@]+)@([^@/%]*)$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex RegexAccountParseFormat();
+
+    // no port, no IP-address-only, limit length (just some random limit, could be raised)
+    [GeneratedRegex(@"^https?://[0-9a-z.-]*[a-z][a-z0-9.-]*/.{0,100}$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex RegexUrlValidator();
 }
