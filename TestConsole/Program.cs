@@ -58,7 +58,8 @@ namespace TestConsole
             // await UpdateDisambigDescription.Run(wikidataSite);
             // await ImportOpenCorporatesIdPerIco.Run(wikidataSite);
             // await UpdateZipFromRuian.Run(wikidataSite);
-            await MastodonAddFromDate.Run(wikidataSite);
+            // await MastodonAddFromDate.Run(wikidataSite);
+            await AddOidToPen.Run(wikidataSite);
             // await WikidataItemCreationStatistics.Run(wikidataSite);
 
             // await AddWikimediaAuthorToFlickrImages.Run(commonsSite, credentials.wcqsOAuthCookie);
