@@ -22,7 +22,7 @@ public partial class ImportCadastralCoords
     [GeneratedRegex(@"^Point\((-?[0-9]+\.[0-9]+)\s+(-?[0-9]+\.[0-9]+)\)$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private static partial Regex WikidataCoordsParser();
 
-    private const int ImportBatchSize = 50;
+    private const int ImportBatchSize = 200;
     private const int CheckBatchSize = 200;
 
     private static readonly string[] Languages = Array.Empty<string>();
@@ -31,8 +31,8 @@ public partial class ImportCadastralCoords
     private const string XMLNS_KUI = "urn:cz:isvs:ruian:schemas:KatUzIntTypy:v1";
     private const string XMLNS_GML = "http://www.opengis.net/gml/3.2";
 
-    private static readonly DateOnly RuianDumpDate = new(2023, 10, 31);
-    private static readonly DateOnly AccessDate = new(2023, 11, 03);
+    private static readonly DateOnly RuianDumpDate = new(2025, 05, 31);
+    private static readonly DateOnly AccessDate = new(2025, 06, 06);
     private static readonly string RuianDumpFilename = $"{RuianDumpDate:yyyyMMdd}_ST_UZSZ.xml.zip";
     private static readonly string RuianDumpUrl = $"https://vdp.cuzk.cz/vymenny_format/soucasna/{RuianDumpFilename}";
 
@@ -42,13 +42,13 @@ public partial class ImportCadastralCoords
     public static async Task Run(WikiSite wikidataSite)
     {
         // https://vdp.cuzk.cz/vdp/ruian/vymennyformat?crKopie=on&casovyRozsah=U&upStatAzZsj=on&uzemniPrvky=ST&dsZakladni=on&datovaSada=Z&vyZakladni=on&vyber=vyZakladni&search=
-        // https://vdp.cuzk.cz/vymenny_format/soucasna/20231031_ST_UZSZ.xml.zip
+        // https://vdp.cuzk.cz/vymenny_format/soucasna/20250531_ST_UZSZ.xml.zip
         await Console.Out.WriteLineAsync("Loading KU data...");
         var ruianData = await LoadXmlData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", RuianDumpFilename));
         await Console.Out.WriteLineAsync($"Done, {ruianData.Count} entries loaded");
 
-        //await ImportCoordsToWikidata(wikidataSite, ruianData);
-        await CheckCoordsInWikidata(wikidataSite, ruianData);
+        await ImportCoordsToWikidata(wikidataSite, ruianData);
+        //await CheckCoordsInWikidata(wikidataSite, ruianData);
     }
 
     private static async Task ImportCoordsToWikidata(WikiSite wikidataSite, Dictionary<string, (float, float)> ruianData)
