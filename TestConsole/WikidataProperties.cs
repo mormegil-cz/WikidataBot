@@ -4,6 +4,8 @@ namespace TestConsole;
 
 public static class WikidataProperties
 {
+    public const string InstanceOf = "P31";
+
     public const string StartTime = "P580";
     public const string EndTime = "P582";
     public const string OfficialName = "P1448";
