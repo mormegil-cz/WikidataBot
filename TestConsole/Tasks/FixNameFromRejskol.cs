@@ -146,7 +146,7 @@ LIMIT 100
                 }
 
                 await Console.Error.WriteAsync($"Editing {entityId} ({counter}/{count})");
-                if (nameClaims.Count != 1) Console.Error.WriteAsync($" ({edits.Count}/{nameClaims.Count} names changed)");
+                if (nameClaims.Count != 1) await Console.Error.WriteAsync($" ({edits.Count}/{nameClaims.Count} names changed)");
                 await Console.Error.WriteLineAsync();
                 await entity.EditAsync(edits, EditSummary, EntityEditOptions.Bot);
             }

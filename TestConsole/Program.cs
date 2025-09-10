@@ -53,7 +53,8 @@ namespace TestConsole
             // await ImportPragueTramStops.Run(wikidataSite);
             // await FixCdeReferences.Run(wikidataSite);
             // await ImportBankRefRate.Run(wikidataSite);
-            await ReclassifyNaturalNumbers.Run(wikidataSite);
+            // await ReclassifyNaturalNumbers.Run(wikidataSite);
+            await RemoveZeroStreetNumbers.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);

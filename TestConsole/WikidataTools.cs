@@ -96,9 +96,11 @@ namespace TestConsole
             }
         }
 
-        public static string GetEntityIdFromUri(string? entityUri) => entityUri == null ? "" : new Uri(entityUri).AbsolutePath.Split('/').Last();
+        public static string GetEntityIdFromUri(string? entityUri) => entityUri == null ? "" : new Uri(entityUri).AbsolutePath.Split('/')[^1];
 
-        public static string GetStatementIdFromUri(string statementUri) => ReplaceFirst(new Uri(statementUri).AbsolutePath.Split('/').Last(), '-', '$');
+        public static string GetEntityIdFromStatementUri(string? entityUri) => entityUri == null ? "" : new Uri(entityUri).AbsolutePath.Split('/')[^1].Split('-')[0];
+
+        public static string GetStatementIdFromUri(string statementUri) => ReplaceFirst(new Uri(statementUri).AbsolutePath.Split('/')[^1], '-', '$');
 
         private static string ReplaceFirst(string str, char from, char to)
         {
@@ -111,7 +113,7 @@ namespace TestConsole
             var rng = RandomNumberGenerator.Create();
             var bytes = new byte[10];
             rng.GetBytes(bytes);
-            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
+            return Convert.ToHexStringLower(bytes);
         }
 
         public static string MakeEditSummary(string summary, string editGroupId) => $"{summary} ([[:toollabs:editgroups/b/CB/{editGroupId}|details]])";
@@ -119,7 +121,7 @@ namespace TestConsole
         public static async Task<string?> GetLabel(WikiSite wikidataSite, string qid, string language)
         {
             var entity = new Entity(wikidataSite, qid);
-            await entity.RefreshAsync(EntityQueryOptions.FetchLabels, new[] { language });
+            await entity.RefreshAsync(EntityQueryOptions.FetchLabels, [language]);
             return entity.Labels[language];
         }
         
