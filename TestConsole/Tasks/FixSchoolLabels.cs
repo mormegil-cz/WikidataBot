@@ -102,7 +102,7 @@ LIMIT 100
                 // remove redundant aliases
                 edits.AddRange(
                     entity.Aliases
-                        .Where(alias => alias.Text == "Základní škola" || (alias.Text == officialName && alias.Language != "mul") || alias.Text.Replace("|", "") == officialName)
+                        .Where(alias => alias.Text == "Základní škola" || (alias.Text == officialName && alias.Language != "mul") || alias.Text.Replace("|", "") == officialName || alias.Text.Replace("|", " ") == officialName)
                         .Select(alias => new EntityEditEntry(nameof(Entity.Aliases), alias, EntityEditEntryState.Removed))
                 );
 

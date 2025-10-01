@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using WikiClientLibrary.Client;
@@ -86,13 +87,13 @@ namespace TestConsole
             }
         }
 
-        public static IEnumerable<IList<string>> GetResultsFromApi(JToken results, IList<string> treeSelector, IList<string> fields)
+        public static IEnumerable<IList<string>> GetResultsFromApi(JsonNode results, IList<string> treeSelector, IList<string> fields)
         {
             var pointer = results;
-            foreach (var branch in treeSelector) pointer = pointer[branch];
-            foreach (var result in pointer)
+            foreach (var branch in treeSelector) pointer = pointer[branch] ?? throw new ArgumentException(branch + " not found", nameof(treeSelector));
+            foreach (var result in pointer.AsArray())
             {
-                yield return fields.Select(field => result[field].Value<string>()).ToList();
+                yield return fields.Select(field => (string)result.AsObject()[field].AsValue()).ToList();
             }
         }
 
@@ -124,13 +125,13 @@ namespace TestConsole
             await entity.RefreshAsync(EntityQueryOptions.FetchLabels, [language]);
             return entity.Labels[language];
         }
-        
+
         public static string EncodeUrlParameters(FormattableString url) =>
             String.Format(
                 CultureInfo.InvariantCulture,
                 url.Format,
                 url.GetArguments()
-                    .Select(a => (object) Uri.EscapeDataString(a?.ToString() ?? ""))
+                    .Select(a => (object)Uri.EscapeDataString(a?.ToString() ?? ""))
                     .ToArray()
             );
 

@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Nodes;
 using Newtonsoft.Json.Linq;
 using WikiClientLibrary.Wikibase.DataTypes;
 
@@ -18,11 +19,13 @@ public static class LexemeBuiltInDataTypes
         = new DelegatePropertyType<string>("wikibase-sense", "wikibase-entityid",
             EntityIdFromJson, EntityIdToJson);
 
-    private static string EntityIdFromJson(JToken value)
+    private static string EntityIdFromJson(JsonNode value)
     {
-        var id = (string)value["id"];
+        string? id = null;
+        value["id"]?.AsValue().TryGetValue(out id);
         if (id != null) return id;
-        var type = (string)value["entity-type"];
+        string? type = null;
+        value["entity-type"]?.AsValue().TryGetValue(out type);
         switch (type)
         {
             case "item":
@@ -37,17 +40,19 @@ public static class LexemeBuiltInDataTypes
             default:
                 throw new ArgumentException("Invalid entity-type: " + type + ".", nameof(value));
         }
-        id += (string)value["numeric-id"];
+        string? numericId = null;
+        value["numeric-id"]?.AsValue().TryGetValue(out id);
+        id += numericId ?? throw new ArgumentException("Missing or invalid numeric-id.", nameof(value));
         return id;
     }
 
-    private static JToken EntityIdToJson(string id)
+    private static JsonNode EntityIdToJson(string id)
     {
         if (id == null) throw new ArgumentNullException(nameof(id));
         id = id.Trim();
         if (id.Length < 2) throw new ArgumentException("Invalid entity identifier.", nameof(id));
         var hyphen = id.IndexOf('-');
-        var value = new JObject();
+        var value = new JsonObject();
         if (hyphen < 0)
         {
             if (id[0] != 'L') throw new ArgumentException("Unsupported entity identifier format: " + id, nameof(id));
@@ -73,41 +78,32 @@ public static class LexemeBuiltInDataTypes
         return value;
     }
 
-    internal sealed class DelegatePropertyType<T> : WikibaseDataType
+    internal sealed class DelegatePropertyType<T>(string name, string valueTypeName, Func<JsonNode, T> parseHandler, Func<T, JsonNode> toJsonHandler)
+        : WikibaseDataType
+        where T : class
     {
-        private readonly Func<JToken, T> parseHandler;
-        private readonly Func<T, JToken> toJsonHandler;
+        private readonly Func<JsonNode, T> parseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
+        private readonly Func<T, JsonNode> toJsonHandler = toJsonHandler ?? throw new ArgumentNullException(nameof(toJsonHandler));
 
-        public DelegatePropertyType(string name, Func<JToken, T> parseHandler, Func<T, JToken> toJsonHandler)
+        public DelegatePropertyType(string name, Func<JsonNode, T> parseHandler, Func<T, JsonNode> toJsonHandler)
             : this(name, name, parseHandler, toJsonHandler)
         {
         }
 
-        public DelegatePropertyType(string name, string valueTypeName, Func<JToken, T> parseHandler, Func<T, JToken> toJsonHandler)
-        {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            ValueTypeName = valueTypeName ?? throw new ArgumentNullException(nameof(valueTypeName));
-            this.parseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
-            this.toJsonHandler = toJsonHandler ?? throw new ArgumentNullException(nameof(toJsonHandler));
-        }
+        /// <inheritdoc />
+        public override string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
         /// <inheritdoc />
-        public override string Name { get; }
-
-        /// <inheritdoc />
-        public override string ValueTypeName { get; }
+        public override string ValueTypeName { get; } = valueTypeName ?? throw new ArgumentNullException(nameof(valueTypeName));
 
         /// <inheritdoc />
         public override Type MappedType => typeof(T);
 
-        public override object Parse(JToken expr)
-        {
-            return parseHandler(expr);
-        }
+        public override object Parse(JsonNode expr) => parseHandler(expr);
 
-        public override JToken ToJson(object value)
+        public override JsonNode ToJson(object value)
         {
-            if (value == null) return null;
+            if (value == null) throw new ArgumentNullException(nameof(value));
             if (value is T t)
                 return toJsonHandler(t);
             throw new ArgumentException($"Value type is incompatible for {Name}: expected {typeof(T)}, received {value.GetType()}.", nameof(value));
