@@ -12,12 +12,14 @@ using static WikidataTools;
 
 public static class WikidataTreeBuilder
 {
-    private static readonly HashSet<string> EmptySet = new();
+    private static readonly HashSet<string> EmptySet = [];
+
+    private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
     public static async Task Run()
     {
         var queue = await FilterItemsToClasses();
-        // var queue = new HashSet<string>(await File.ReadAllLinesAsync(@"/home/petr/Downloads/5000-most-used-wikidata-classes-list.txt"));
+        // var queue = new HashSet<string>(await File.ReadAllLinesAsync(Path.Combine(BasePath, "5000-most-used-wikidata-classes-list.txt")));
 
         var batch = 0;
         var processedEntities = new HashSet<string>();
@@ -56,7 +58,7 @@ SELECT ?item ?itemLabel ?parents WHERE {
                 var entityId = GetEntityIdFromUri(row[0]!);
                 var itemLabel = row[1]!;
                 var superclassIds = String.IsNullOrEmpty(row[2]) ? EmptySet : row[2]!.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(GetEntityIdFromUri).ToHashSet();
-                superclasses.Add(entityId, new HashSet<string>(superclassIds));
+                superclasses.Add(entityId, [..superclassIds]);
                 entityLabels.Add(entityId, itemLabel);
 
                 superclassIds.ExceptWith(processedEntities);
@@ -74,7 +76,7 @@ SELECT ?item ?itemLabel ?parents WHERE {
             Options = FileOptions.Asynchronous,
             Share = FileShare.None
         };
-        await using var outputFile = new StreamWriter(@"/home/petr/Downloads/5000-most-used-wikidata-classes.json", Encoding.UTF8, fileStreamOptions);
+        await using var outputFile = new StreamWriter(Path.Combine(BasePath, "5000-most-used-wikidata-classes.json"), Encoding.UTF8, fileStreamOptions);
         await outputFile.WriteLineAsync("{");
         var first = true;
         foreach (var entry in superclasses)
@@ -98,7 +100,7 @@ SELECT ?item ?itemLabel ?parents WHERE {
     private static async Task<HashSet<string>> FilterItemsToClasses()
     {
         var batch = 0;
-        var mostLinkedItems = new HashSet<string>(await File.ReadAllLinesAsync(@"/home/petr/Downloads/5000-most-used-wikidata-items-list.txt"));
+        var mostLinkedItems = new HashSet<string>(await File.ReadAllLinesAsync(Path.Combine(BasePath, "5000-most-used-wikidata-items-list.txt")));
 
         var queue = new HashSet<string>(mostLinkedItems.Count);
         while (mostLinkedItems.Count > 0)
@@ -156,7 +158,7 @@ SELECT ?item WHERE {
             }
         }
 
-        await File.WriteAllLinesAsync(@"/home/petr/Downloads/5000-most-used-wikidata-classes-list.txt", queue);
+        await File.WriteAllLinesAsync(Path.Combine(BasePath, "5000-most-used-wikidata-classes-list.txt"), queue);
         return queue;
     }
 
