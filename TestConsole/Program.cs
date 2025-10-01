@@ -28,7 +28,8 @@ namespace TestConsole
             var wikidataSite = await WikidataTools.Init(WikidataTools.WikidataApiEndpoint);
             // var commonsSite = await WikidataTools.Init(WikidataTools.CommonsApiEndpoint);
 
-            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "", wcqsOAuthCookie = "" }) ?? throw new FormatException("Missing configuration");
+            var credentials = JsonConvert.DeserializeAnonymousType(await File.ReadAllTextAsync("credentials.json"), new { username = "", password = "", wcqsOAuthCookie = "" }) ??
+                              throw new FormatException("Missing configuration");
 
             await Console.Error.WriteLineAsync("Logging in...");
             await wikidataSite.LoginAsync(credentials.username, Encoding.UTF8.GetString(Convert.FromBase64String(credentials.password)));
@@ -54,7 +55,8 @@ namespace TestConsole
             // await FixCdeReferences.Run(wikidataSite);
             // await ImportBankRefRate.Run(wikidataSite);
             // await ReclassifyNaturalNumbers.Run(wikidataSite);
-            await RemoveZeroStreetNumbers.Run(wikidataSite);
+            // await RemoveZeroStreetNumbers.Run(wikidataSite);
+            await FixSchoolLabels.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);
