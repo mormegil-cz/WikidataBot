@@ -58,6 +58,7 @@ namespace TestConsole
             // await ReclassifyNaturalNumbers.Run(wikidataSite);
             // await RemoveZeroStreetNumbers.Run(wikidataSite);
             // await FixSchoolLabels.Run(wikidataSite);
+            // await FixSchoolDescriptionDeclension.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);
