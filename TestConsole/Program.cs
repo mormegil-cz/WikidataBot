@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace TestConsole
             // await ImportBankRefRate.Run(wikidataSite);
             // await ReclassifyNaturalNumbers.Run(wikidataSite);
             // await RemoveZeroStreetNumbers.Run(wikidataSite);
-            await FixSchoolLabels.Run(wikidataSite);
+            // await FixSchoolLabels.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);

@@ -15,6 +15,8 @@ public static class FixSchoolLabels
     private static readonly string EditGroupId = GenerateRandomEditGroupId();
     private static readonly string EditSummary = MakeEditSummary("Fixing useless labels from Rejskol import", EditGroupId);
 
+    private static readonly char[] Separators = ",;:–0123456789".ToArray();
+
     private static readonly FrozenSet<string> DroppedSuffixes =
     [
         ", příspěvková organizace",
@@ -27,21 +29,34 @@ public static class FixSchoolLabels
 
     public static async Task Run(WikiSite wikidataSite)
     {
+        foreach (var (replacedClass, replacedLabel) in new List<(string, string)>
+                 {
+                     ("Q9842", "Základní škola"), ("Q126807", "Mateřská škola"), ("Q9842", "Základní škola a Mateřská škola"), ("Q9842", "Základní a mateřská škola"), ("Q159334", "Střední škola")
+                 })
+        {
+            await Console.Error.WriteLineAsync($"--- {replacedLabel} ---");
+            await Run(wikidataSite, replacedClass, replacedLabel);
+        }
+    }
+
+    private static async Task Run(WikiSite wikidataSite, string searchedClass, string replacedLabel)
+    {
         var batch = 0;
         var problematicItems = new HashSet<string>();
+        var processedItems = new HashSet<string>();
         while (true)
         {
             ++batch;
             await Console.Error.WriteAsync($"Batch #{batch} Retrieving data from WQS...");
             var entities = GetEntities(await GetSparqlResults(@"
 SELECT ?item WHERE {
-  ?item wdt:P31 wd:Q9842;
+  ?item wdt:P31 wd:" + searchedClass + @";
         wdt:P1448 ?name;
-        rdfs:label ""Základní škola""@cs.
+        rdfs:label """ + replacedLabel + @"""@cs.
   MINUS {
     VALUES ?item { " + String.Join(' ', problematicItems.Select(item => "wd:" + item)) + @" }
   }
-  FILTER (?name != ""Základní škola""@cs)
+  FILTER (?name != """ + replacedLabel + @"""@cs)
 }
 LIMIT 100
 "), new Dictionary<string, string> { { "item", "uri" } }).ToList();
@@ -54,6 +69,13 @@ LIMIT 100
             {
                 ++counter;
                 var entityId = GetEntityIdFromUri(row[0]);
+                if (!processedItems.Add(entityId))
+                {
+                    await Console.Error.WriteLineAsync($"Entity {entityId} has already been processed!");
+                    problematicItems.Add(entityId);
+                    continue;
+                }
+
                 // await Console.Error.WriteLineAsync($"Reading {entityId} ({counter}/{count})");
                 var entity = new Entity(wikidataSite, entityId);
                 await entity.RefreshAsync(EntityQueryOptions.FetchClaims | EntityQueryOptions.FetchLabels | EntityQueryOptions.FetchAliases, null);
@@ -95,23 +117,24 @@ LIMIT 100
 
                 // remove redundant labels
                 var edits = entity.Labels
-                    .Where(label => label.Text == "Základní škola" && label.Language != "cs" && label.Language != "mul")
+                    .Where(label => label.Text == replacedLabel && label.Language != "cs" && label.Language != "mul")
                     .Select(label => new EntityEditEntry(nameof(Entity.Labels), label, EntityEditEntryState.Removed))
                     .ToList();
 
                 // remove redundant aliases
                 edits.AddRange(
                     entity.Aliases
-                        .Where(alias => alias.Text == "Základní škola" || (alias.Text == officialName && alias.Language != "mul") || alias.Text.Replace("|", "") == officialName || alias.Text.Replace("|", " ") == officialName)
+                        .Where(alias => alias.Text == replacedLabel || (alias.Text == officialName && alias.Language != "mul") || alias.Text.Replace("|", "") == officialName ||
+                                        alias.Text.Replace("|", " ") == officialName)
                         .Select(alias => new EntityEditEntry(nameof(Entity.Aliases), alias, EntityEditEntryState.Removed))
                 );
 
-                if (!entity.Labels.ContainsLanguage("cs") || entity.Labels["cs"] == "Základní škola")
+                if (!entity.Labels.ContainsLanguage("cs") || entity.Labels["cs"] == replacedLabel)
                 {
                     var czechLabel = new WbMonolingualText("cs", shortenedOfficialName);
                     edits.Add(new EntityEditEntry(nameof(Entity.Labels), czechLabel));
                 }
-                if (!entity.Labels.ContainsLanguage("mul") || entity.Labels["mul"] == "Základní škola")
+                if (!entity.Labels.ContainsLanguage("mul") || entity.Labels["mul"] == replacedLabel)
                 {
                     var mulLabel = new WbMonolingualText("mul", shortenedOfficialName);
                     edits.Add(new EntityEditEntry(nameof(Entity.Labels), mulLabel));
@@ -146,8 +169,6 @@ LIMIT 100
             ? officialName
             : officialName[..^droppedSuffix.Length];
     }
-
-    private static readonly char[] Separators = ",;:–0123456789".ToArray();
 
     private static string DropDistrict(string officialName)
     {
