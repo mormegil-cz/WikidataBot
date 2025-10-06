@@ -59,6 +59,7 @@ namespace TestConsole
             // await RemoveZeroStreetNumbers.Run(wikidataSite);
             // await FixSchoolLabels.Run(wikidataSite);
             // await FixSchoolDescriptionDeclension.Run(wikidataSite);
+            await FixSchoolFounderRoleQualifier.Run(wikidataSite);
 
             // await ImportDsPerIco.Run(wikidataSite);
             // await UpdateDisambigDescription.Run(wikidataSite);

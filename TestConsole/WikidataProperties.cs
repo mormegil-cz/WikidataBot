@@ -12,6 +12,9 @@ public static class WikidataProperties
     public const string LexemeSense = "P7018";
 
     public const string HqLocation = "P159";
+    public const string ParentOrganization = "P749";
+    public const string SubjectRole = "P2868";
+    public const string ObjectRole = "P3831";
 
     public const string Country = "P17";
     public const string Street = "P669";

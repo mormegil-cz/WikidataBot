@@ -31,7 +31,12 @@ public static class FixSchoolLabels
     {
         foreach (var (replacedClass, replacedLabel) in new List<(string, string)>
                  {
-                     ("Q9842", "Základní škola"), ("Q126807", "Mateřská škola"), ("Q9842", "Základní škola a Mateřská škola"), ("Q9842", "Základní a mateřská škola"), ("Q159334", "Střední škola")
+                     ("Q9842", "Základní škola"),
+                     ("Q126807", "Mateřská škola"),
+                     ("Q9842", "Základní škola a Mateřská škola"),
+                     ("Q9842", "Základní a mateřská škola"),
+                     ("Q159334", "Střední škola"),
+                     ("Q11863339", "Dům dětí a mládeže"),
                  })
         {
             await Console.Error.WriteLineAsync($"--- {replacedLabel} ---");
