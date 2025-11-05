@@ -20,7 +20,7 @@ namespace TestConsole.Tasks
         private const int QuerySkip = 0;
 
         internal const bool ImportingPo = true;
-        internal static readonly DateOnly ImportDate = new(2025, 10, 3);
+        internal static readonly DateOnly ImportDate = new(2025, 11, 5);
 
         private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 

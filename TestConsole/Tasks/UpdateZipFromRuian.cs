@@ -16,7 +16,7 @@ namespace TestConsole.Tasks;
 public static class UpdateZipFromRuian
 {
     private static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-    private static readonly DateOnly ImportCsvDate = new(2025, 9, 30);
+    private static readonly DateOnly ImportCsvDate = new(2025, 10, 31);
     private static readonly DateTime ImportTimestamp = DateTime.UtcNow;
 
     // see https://nahlizenidokn.cuzk.cz/StahniAdresniMistaRUIAN.aspx
