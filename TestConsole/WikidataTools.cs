@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
@@ -18,6 +19,8 @@ namespace TestConsole
     {
         public const string ProductName = "MormegilsBot";
         public const string Version = "0.1";
+
+        public const int MaxSparqlAttempts = 3;
 
         public const string UserAgent = $"${ProductName}/${Version} (mormegil@centrum.cz) ${WikiClient.WikiClientUserAgent}";
 
@@ -38,27 +41,39 @@ namespace TestConsole
 
         public static Task<string> GetSparqlResults([StringSyntax("Sparql")] string sparql) => GetSparqlResults(WikidataQueryServiceEndpoint, null, null, sparql);
 
-        public static Task<string> GetSparqlResults(string queryServiceEndpoint, string? cookieName, string? cookieValue, [StringSyntax("Sparql")] string sparql)
+        public static async Task<string> GetSparqlResults(string queryServiceEndpoint, string? cookieName, string? cookieValue, [StringSyntax("Sparql")] string sparql)
         {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
-            client.DefaultRequestHeaders.Add("Accept", "application/sparql-results+json");
-            if (cookieName != null)
+            for (var attempt = 0;; ++attempt)
             {
-                client.DefaultRequestHeaders.Add("Cookie", cookieName + "=" + cookieValue);
-            }
-            // TODO: Alternate POSTed form for long queries
-            // TODO: URI building and escaping
-            // TODO: Collapse multiple tabs to shorten the string
-            var uriBuilder = new UriBuilder(queryServiceEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
-            try
-            {
-                return client.GetStringAsync(uriBuilder.Uri);
-            }
-            catch (HttpRequestException)
-            {
-                Console.Error.WriteLine("Error in SPARQL: " + sparql);
-                throw;
+                var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+                client.DefaultRequestHeaders.Add("Accept", "application/sparql-results+json");
+                if (cookieName != null)
+                {
+                    client.DefaultRequestHeaders.Add("Cookie", cookieName + "=" + cookieValue);
+                }
+                // TODO: Alternate POSTed form for long queries
+                // TODO: URI building and escaping
+                // TODO: Collapse multiple tabs to shorten the string
+                var uriBuilder = new UriBuilder(queryServiceEndpoint) { Query = "format=json&query=" + Uri.EscapeDataString(sparql) };
+                try
+                {
+                    return await client.GetStringAsync(uriBuilder.Uri);
+                }
+                catch (HttpRequestException e)
+                {
+                    switch (e.StatusCode.GetValueOrDefault())
+                    {
+                        case HttpStatusCode.BadGateway or HttpStatusCode.GatewayTimeout when attempt < MaxSparqlAttempts:
+                            await Console.Error.WriteLineAsync("SPARQL query returned gateway error, will retry");
+                            await Task.Delay(3000);
+                            continue;
+                        case HttpStatusCode.BadRequest:
+                            await Console.Error.WriteLineAsync("Error in SPARQL: " + sparql);
+                            break;
+                    }
+                    throw;
+                }
             }
         }
 
